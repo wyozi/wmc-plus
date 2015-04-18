@@ -4,11 +4,10 @@ function PANEL:Init()
 	self:SetCursor("hand")
 end
 function PANEL:Paint(w, h)
-	local elapsed = self.Elapsed
 	local duration = self.Duration
 
 	local frac = 0
-	if elapsed and duration then frac = elapsed/duration end
+	if self.Elapsed and duration then frac = self.Elapsed/duration end
 
 	surface.SetDrawColor(108, 122, 137, 200)
 	surface.DrawRect(0, 0, w * frac, h)
@@ -24,6 +23,12 @@ function PANEL:SetDuration(time)
 	self.Duration = time
 end
 
+function PANEL:OnCursorMoved(x, y)
+	if input.IsMouseDown(MOUSE_LEFT) then
+		local frac = x / self:GetWide()
+		self:OnSeeking(frac)
+	end
+end
 function PANEL:OnMouseReleased(mcode)
 	if mcode == MOUSE_LEFT then
 		local x = self:ScreenToLocal(gui.MouseX())
@@ -31,6 +36,7 @@ function PANEL:OnMouseReleased(mcode)
 	end
 end
 
+function PANEL:OnSeeking(frac) end
 function PANEL:OnSeeked(frac) end
 
-derma.DefineControl("WMCMediaSeeker", "", PANEL, "Panel")
+derma.DefineControl("WMCMediaSeeker", "", PANEL, "DPanel")

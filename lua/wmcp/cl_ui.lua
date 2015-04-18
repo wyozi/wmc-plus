@@ -193,10 +193,11 @@ function wmcp.CreatePlayer(par)
 	player.VolSeeker = player:Add("WMCMediaSeeker")
 	player.VolSeeker:SetDuration(100)
 	player.VolSeeker:SetElapsed(wmcp.GetVolume()*100)
-	player.VolSeeker.OnSeeked = function(pself, frac)
+	player.VolSeeker.OnSeeking = function(pself, frac)
 		pself:SetElapsed(frac * 100)
 		wmcp.SetVolume(frac)
 	end
+	player.VolSeeker.OnSeeked = player.VolSeeker.OnSeeking
 
 	player.Title = player:Add("DLabel")
 	player.Title:SetFont("WMCPMediaTitle")
