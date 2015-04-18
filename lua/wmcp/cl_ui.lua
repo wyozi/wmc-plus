@@ -1,7 +1,7 @@
 function wmcp.OpenUI()
 	local fr = vgui.Create("DFrame")
 	fr:SetSkin("WMCPUI")
-	fr:SetTitle("Wyozi Media Center +")
+	fr:SetTitle("Wyozi Media Center Plus")
 	fr:SetSizable(true)
 
 	fr:SetSize(900, 600)
