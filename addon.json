@@ -1,0 +1,14 @@
+{
+    "default_changelog": "Updated",
+    "ignore": [
+        "logo*.jpg",
+        ".git/*",
+        ".gitignore"
+    ],
+    "tags": [
+        "fun", "movie"
+    ],
+    "title": "Wyozi Media Center Plus",
+    "type": "tool",
+    "workshopid": 426998109
+}
