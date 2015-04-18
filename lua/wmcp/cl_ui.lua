@@ -15,6 +15,10 @@ function wmcp.OpenUI()
 	wmcp.Frame = fr
 
 	hook.Call("WMCPPostOpenUI", nil, fr)
+
+	fr.OnClose = function()
+		hook.Call("WMCPPreCloseUI", nil, fr)
+	end
 end
 
 function wmcp.IsOpen()
@@ -23,8 +27,6 @@ end
 
 function wmcp.CloseUI()
 	if not IsValid(wmcp.Frame) then return end
-
-	hook.Call("WMCPPreCloseUI", nil, wmcp.Frame)
 
 	wmcp.Frame:Close()
 end
