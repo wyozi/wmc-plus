@@ -17,10 +17,8 @@ SKIN.Colours.Button.Hover				= Color(255, 255, 255)
 SKIN.Colours.Button.Down				= Color(255, 255, 255)
 SKIN.Colours.Button.Disabled			= Color(255, 255, 255)
 
-SKIN.Colours.Button.BackgroundNormal				= Color(108, 122, 137)
-SKIN.Colours.Button.BackgroundHover					= Color(149, 165, 166)
-SKIN.Colours.Button.BackgroundDown					= GWEN.TextureColor( 4 + 8 * 2, 500 )
-SKIN.Colours.Button.BackgroundDisabled				= Color(191, 191, 191)
+SKIN.Colours.Button.BackgroundNormal				= Color(149, 165, 166)
+SKIN.Colours.Button.BackgroundDisabled				= Color(48, 48, 48)
 SKIN.Colours.Button.BackgroundOutline				= Color(255, 255, 255)
 
 SKIN.Colours.List = {}
@@ -95,11 +93,13 @@ function SKIN:PaintButton( panel, w, h )
 	local clr = panel.BGTint or self.Colors.Button.BackgroundNormal
 	
 	if ( panel.Depressed || panel:IsSelected() || panel:GetToggle() ) then
-		clr = self.Colors.Button.BackgroundDown
+		local h, s, v = ColorToHSV(clr)
+		clr = HSVToColor(h, s, v + 0.12)
 	end
 	
 	if ( panel.Hovered ) then
-		clr = self.Colors.Button.BackgroundHover
+		local h, s, v = ColorToHSV(clr)
+		clr = HSVToColor(h, s, v + 0.1)
 	end
 
 	if ( panel:GetDisabled() ) then
@@ -109,7 +109,7 @@ function SKIN:PaintButton( panel, w, h )
 	surface.SetDrawColor(clr)
 	surface.DrawRect(0, 0, w, h)
 
-	surface.SetDrawColor(self.Colors.Button.BackgroundOutline)
+	surface.SetDrawColor(panel.OutlineTint or self.Colors.Button.BackgroundOutline)
 	surface.DrawOutlinedRect(0, 0, w, h)
 
 	self:UpdateLabel(panel)

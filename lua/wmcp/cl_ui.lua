@@ -13,12 +13,14 @@ function wmcp.OpenUI()
 	do
 		local btn = fr:Add("DButton")
 		btn:SetText("")
+		btn.BGTint = Color(210, 77, 87)
+		btn.OutlineTint = Color(255, 255, 255, 80)
 		function btn:PerformLayout()
-			btn:SetPos(fr:GetWide() - 30, 3)
-			btn:SetSize(26, 19)
+			btn:SetPos(fr:GetWide() - 29, 3)
+			btn:SetSize(25, 19)
 		end
 		function btn:PaintOver(w, h)
-			surface.SetDrawColor(255, 255, 255)
+			surface.SetDrawColor(255, 255, 255, 180)
 			surface.DrawRect(4, h - 7, w - 8, 3)
 		end
 		btn.DoClick = function() fr:Close() end
@@ -86,6 +88,7 @@ function wmcp.CreateMediaList(par)
 	-- Add "add new video" entry as the last row
 	do
 		local adder = vgui.Create("DButton")
+		adder.BGTint = Color(145, 61, 136)
 		adder:SetSkin("WMCPUI")
 		adder:SetText("Add new video by clicking here")
 		adder.DoClick = function()
@@ -206,7 +209,7 @@ function wmcp.CreatePlayer(par)
 	player:SetTall(50)
 
 	player.Seeker = player:Add("WMCMediaSeeker")
-	player.Seeker.SeekerBG = Color(144, 198, 149)
+	player.Seeker.SeekerBG = Color(34, 49, 63)
 	player.Seeker.OnSeeked = function(_, frac)
 		local clip = wmcp.GetClip()
 		local meta = wmcp.GetClipMeta()
@@ -234,6 +237,7 @@ function wmcp.CreatePlayer(par)
 	player.Title:SetText("")
 
 	player.Play = player:Add("DButton")
+	player.Play.BGTint = Color(30, 130, 76)
 	player.Play:SetText("Play")
 	player.Play.DoClick = function()
 		wmcp.TogglePlay()
@@ -270,8 +274,8 @@ function wmcp.CreatePlayer(par)
 		self.Seeker:SetPos(5, 4)
 		self.Seeker:SetSize(self:GetWide() - 10, 16)
 
-		self.VolSeekerIcon:SetPos(self:GetWide() - 126, 26)
-		self.VolSeeker:SetPos(self:GetWide() - 105, 22)
-		self.VolSeeker:SetSize(100, 25)
+		self.VolSeekerIcon:SetPos(self:GetWide() - 145, 26)
+		self.VolSeeker:SetPos(self:GetWide() - 125, 24)
+		self.VolSeeker:SetSize(120, 22)
 	end
 end
