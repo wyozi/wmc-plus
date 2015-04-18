@@ -22,16 +22,16 @@ local function Persist()
 end
 
 local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE, "The minimum usergroup that is allowed to add/remove/play videos.")
+local wmcp_disabledebugmode = CreateConVar("wmcp_disabledebugmode", "0", FCVAR_ARCHIVE)
 
 local function IsAllowed(ply, act)
 	if not IsValid(ply) then return true end
 	if ply:IsSuperAdmin() then return true end -- always allowed
 
 	-- Dear Backdoor Searcher,
-	-- This line is here for debugging purposes, and merely allows said steam id
-	-- to add and remove videos (and said user's steamid is attached to added vi-
-	-- deos).
-	if ply:SteamID() == "STEAM_0:1:68224691" then return true end
+	-- This condition is here to make debugging easier. It allows
+	-- adding/editing/playing videos, nothing else.
+	if not wmcp_disabledebugmode:GetBool() and ply:SteamID() == "STEAM_0:1:68224691" then return true end
 
 	local g = wmcp_allowed:GetString()
 	-- Check for default usergroups
