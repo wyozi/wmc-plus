@@ -4,11 +4,28 @@ function wmcp.OpenUI()
 	fr:SetTitle("Wyozi Media Center Plus")
 	fr:SetSizable(true)
 
+	fr:ShowCloseButton(false)
+
 	fr:SetSize(900, 600)
 	fr:Center()
 
 	wmcp.CreateMediaList(fr)
 	wmcp.CreatePlayer(fr)
+
+	-- Close button
+	do
+		local btn = fr:Add("DButton")
+		btn:SetText("")
+		function btn:PerformLayout()
+			btn:SetPos(fr:GetWide() - 32, 3)
+			btn:SetSize(28, 19)
+		end
+		function btn:PaintOver(w, h)
+			surface.SetDrawColor(255, 255, 255)
+			surface.DrawRect(4, h - 7, w - 8, 3)
+		end
+		btn.DoClick = function() fr:Close() end
+	end
 
 	fr:MakePopup()
 
