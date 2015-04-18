@@ -182,6 +182,7 @@ function wmcp.CreatePlayer(par)
 	player:SetTall(50)
 
 	player.Seeker = player:Add("WMCMediaSeeker")
+	player.Seeker.SeekerBG = Color(144, 198, 149)
 	player.Seeker.OnSeeked = function(_, frac)
 		local clip = wmcp.GetClip()
 		local meta = wmcp.GetClipMeta()
@@ -190,9 +191,14 @@ function wmcp.CreatePlayer(par)
 		end
 	end
 
+	player.VolSeekerIcon = player:Add("DImage")
+	player.VolSeekerIcon:SetImage("icon16/sound.png")
+	player.VolSeekerIcon:SetSize(16, 16)
+
 	player.VolSeeker = player:Add("WMCMediaSeeker")
 	player.VolSeeker:SetDuration(100)
 	player.VolSeeker:SetElapsed(wmcp.GetVolume()*100)
+	player.VolSeeker.SeekerBG = Color(68, 108, 179)
 	player.VolSeeker.OnSeeking = function(pself, frac)
 		pself:SetElapsed(frac * 100)
 		wmcp.SetVolume(frac)
@@ -240,6 +246,7 @@ function wmcp.CreatePlayer(par)
 		self.Seeker:SetPos(5, 4)
 		self.Seeker:SetSize(self:GetWide() - 10, 16)
 
+		self.VolSeekerIcon:SetPos(self:GetWide() - 126, 26)
 		self.VolSeeker:SetPos(self:GetWide() - 105, 22)
 		self.VolSeeker:SetSize(100, 25)
 	end
