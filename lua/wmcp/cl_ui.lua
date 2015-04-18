@@ -51,6 +51,7 @@ function wmcp.CreateMediaList(par)
 	-- Remove sorting by removing DButton functionality. This retains WMCPUI skin
 	for _,v in pairs(medialist.Columns) do v.DoClick = function() end end
 
+	-- Hack DataLayout to sort items before doing whatever DataLayout does
 	local olddl = medialist.DataLayout
 	medialist.DataLayout = function(self)
 		table.Copy(self.Sorted, self.Lines)
@@ -62,7 +63,6 @@ function wmcp.CreateMediaList(par)
 			return  aval < bval
 		end)
 
-		--PrintTable(self.Sorted)
 		return olddl(self)
 	end
 
@@ -76,7 +76,14 @@ function wmcp.CreateMediaList(par)
 				RunConsoleCommand("wmcp_add", url)
 			end)
 		end
-		medialist:AddLine("", adder, nil)
+		local line = medialist:AddLine("", adder, nil)
+		function line:DataLayout(listView)
+			self:ApplySchemeSettings()
+
+			local margin = 10
+			self.Columns[2]:SetPos(margin, 0)
+			self.Columns[2]:SetSize(self:GetWide() - margin*2, self:GetTall())
+		end
 	end
 
 	function medialist:DoDoubleClick(id, line)
