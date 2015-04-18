@@ -9,7 +9,7 @@ SKIN.Colours.Window.TitleActive			= Color(255, 255, 255)
 SKIN.Colours.Window.TitleInactive		= GWEN.TextureColor( 4 + 8 * 1, 508 )
 SKIN.Colours.Window.Background			= Color(236, 236, 236)
 SKIN.Colours.Window.Outline 			= Color(255, 255, 255)
-SKIN.Colours.Window.TitleBackground 	= Color(108, 122, 137)
+SKIN.Colours.Window.TitleBackground 	= Color(44, 62, 80)
 
 SKIN.Colours.Button = {}
 SKIN.Colours.Button.Normal				= Color(255, 255, 255)
@@ -20,7 +20,7 @@ SKIN.Colours.Button.Disabled			= Color(255, 255, 255)
 SKIN.Colours.Button.BackgroundNormal				= Color(108, 122, 137)
 SKIN.Colours.Button.BackgroundHover					= Color(149, 165, 166)
 SKIN.Colours.Button.BackgroundDown					= GWEN.TextureColor( 4 + 8 * 2, 500 )
-SKIN.Colours.Button.BackgroundDisabled				= GWEN.TextureColor( 4 + 8 * 3, 500 )
+SKIN.Colours.Button.BackgroundDisabled				= Color(191, 191, 191)
 SKIN.Colours.Button.BackgroundOutline				= Color(255, 255, 255)
 
 SKIN.Colours.List = {}
@@ -92,18 +92,18 @@ end
 function SKIN:PaintButton( panel, w, h )
 	if ( !panel.m_bBackground ) then return end
 	
-	local clr = self.Colors.Button.BackgroundNormal
+	local clr = panel.BGTint or self.Colors.Button.BackgroundNormal
 	
 	if ( panel.Depressed || panel:IsSelected() || panel:GetToggle() ) then
 		clr = self.Colors.Button.BackgroundDown
 	end
 	
-	if ( panel:GetDisabled() ) then
-		clr = self.Colors.Button.BackgroundDisabled
-	end
-	
 	if ( panel.Hovered ) then
 		clr = self.Colors.Button.BackgroundHover
+	end
+
+	if ( panel:GetDisabled() ) then
+		clr = self.Colors.Button.BackgroundDisabled
 	end
 	
 	surface.SetDrawColor(clr)

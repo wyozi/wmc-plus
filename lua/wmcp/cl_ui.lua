@@ -9,16 +9,13 @@ function wmcp.OpenUI()
 	fr:SetSize(900, 600)
 	fr:Center()
 
-	wmcp.CreateMediaList(fr)
-	wmcp.CreatePlayer(fr)
-
 	-- Close button
 	do
 		local btn = fr:Add("DButton")
 		btn:SetText("")
 		function btn:PerformLayout()
-			btn:SetPos(fr:GetWide() - 32, 3)
-			btn:SetSize(28, 19)
+			btn:SetPos(fr:GetWide() - 30, 3)
+			btn:SetSize(26, 19)
 		end
 		function btn:PaintOver(w, h)
 			surface.SetDrawColor(255, 255, 255)
@@ -26,6 +23,9 @@ function wmcp.OpenUI()
 		end
 		btn.DoClick = function() fr:Close() end
 	end
+
+	wmcp.CreateMediaList(fr)
+	wmcp.CreatePlayer(fr)
 
 	fr:MakePopup()
 
@@ -66,7 +66,7 @@ function wmcp.CreateMediaList(par)
 	medialist.Columns[3]:SetFixedWidth(150)
 
 	-- Remove sorting by removing DButton functionality. This retains WMCPUI skin
-	for _,v in pairs(medialist.Columns) do v.DoClick = function() end end
+	for _,v in pairs(medialist.Columns) do v.Header:SetDisabled(true) v.DoClick = function() end end
 
 	-- Hack DataLayout to sort items before doing whatever DataLayout does
 	local olddl = medialist.DataLayout
