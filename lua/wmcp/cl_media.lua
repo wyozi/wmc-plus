@@ -15,6 +15,8 @@ function wmcp.Play(url, overridingMeta)
 			wmcp.ClipMeta = data
 		end
 	end)
+
+	return clip
 end
 
 net.Receive("wmcp_gplay", function()

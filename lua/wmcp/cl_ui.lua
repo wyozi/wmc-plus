@@ -106,10 +106,33 @@ function wmcp.CreateMediaList(par)
 		end
 	end
 
+	local function Play(id, line)
+		local clip = wmcp.Play(line.Url, {title = line:GetColumnText(2)})
+		if clip then
+			clip:on("ended", function()
+				local id = line.MediaId+1
+
+				local nline
+				for _,iline in pairs(medialist.Lines) do
+					if iline.MediaId == id then
+						nline = iline
+						break
+					end
+				end
+
+				if nline then
+					-- Go next
+					timer.Simple(0.5, function()
+						Play(nil, nline)
+					end)
+				end
+			end)
+		end
+	end
+
 	function medialist:DoDoubleClick(id, line)
 		if not line.MediaId then return end
-		
-		wmcp.Play(line.Url, {title = line:GetColumnText(2)})
+		Play(id, line)
 	end
 
 	function medialist:OnRowRightClick(id, line)
@@ -118,7 +141,7 @@ function wmcp.CreateMediaList(par)
 		local menu = DermaMenu()
 
 		menu:AddOption("Play", function()
-			wmcp.Play(line.Url, {title = line:GetColumnText(2)})
+			Play(id, line)
 		end):SetImage("icon16/control_play.png")
 
 		menu:AddOption("Play for Everyone", function()
