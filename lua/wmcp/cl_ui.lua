@@ -100,7 +100,7 @@ function wmcp.CreateMediaList(par)
 		function line:DataLayout(listView)
 			self:ApplySchemeSettings()
 
-			local margin = 10
+			local margin = 0
 			self.Columns[2]:SetPos(margin, 0)
 			self.Columns[2]:SetSize(self:GetWide() - margin*2, self:GetTall())
 		end
