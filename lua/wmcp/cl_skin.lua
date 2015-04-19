@@ -112,5 +112,18 @@ function SKIN:PaintListView( panel, w, h )
 	surface.SetDrawColor(self.Colors.List.Outline)
 	surface.DrawOutlinedRect(0, 0, w, h)
 end
+
+function SKIN:PaintListViewLine( panel, w, h )
+	if ( panel:IsSelected() ) then
+		self.tex.Input.ListBox.EvenLineSelected( 0, 0, w, h )
+	elseif ( panel.Hovered ) then
+		self.tex.Input.ListBox.Hovered( 0, 0, w, h )
+	elseif panel.Active or (panel.ActiveCond and panel:ActiveCond()) then
+		surface.SetDrawColor(144, 198, 149, 255)
+		surface.DrawRect(0, 0, w, h)
+	elseif ( panel.m_bAlt ) then
+		self.tex.Input.ListBox.EvenLine( 0, 0, w, h )
+	end
+end
  
 derma.DefineSkin("WMCPUI", "Fun fun fun fun", SKIN)

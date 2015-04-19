@@ -158,6 +158,10 @@ function wmcp.CreateMediaList(par)
 		if not line then
 			line = medialist:AddLine(id)
 			line:SetCursor("hand")
+			line.ActiveCond = function(pself)
+				local clip = wmcp.GetClip()
+				return clip and clip:getUrl() == pself.Url
+			end
 		end
 
 		line.MediaId = id
