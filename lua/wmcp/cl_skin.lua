@@ -47,17 +47,13 @@ SKIN.Colours.TooltipText = GWEN.TextureColor( 4 + 8 * 26, 500 )
 
 SKIN.Colors = SKIN.Colours -- Garry you idiot
 
-surface.CreateFont("WMCPUIFrameFont", {
+surface.CreateFont("WMCPUINormalFont", {
 	font = "Roboto",
 	size = 16
 })
-surface.CreateFont("WMCPUINormalFont", {
-	font = "Roboto",
-	size = 14
-})
 surface.CreateFont("WMCPUINormalFontBold", {
 	font = "Roboto",
-	size = 14,
+	size = 16,
 	weight = 800
 })
 SKIN.fontFrame = "WMCPUIFrameFont"
@@ -65,9 +61,6 @@ SKIN.fontFrame = "WMCPUIFrameFont"
 -- Kids, don't do this at home
 function SKIN:UpdateLabel(lbl)
 	if lbl:GetFont() == "DermaDefault" then lbl:SetFont("WMCPUINormalFont") end
-end
-function SKIN:UpdateFrameLabel(lbl)
-	lbl:SetFont("WMCPUIFrameFont")
 end
  
 function SKIN:PaintFrame( panel, w, h )
@@ -82,7 +75,7 @@ function SKIN:PaintFrame( panel, w, h )
 	surface.SetDrawColor(self.Colors.Window.TitleBackground)
 	surface.DrawRect(1, 1, w-2, 23)
 
-	self:UpdateFrameLabel(panel.lblTitle)
+	self:UpdateLabel(panel.lblTitle)
 
 	return true
 end
