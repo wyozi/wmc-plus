@@ -29,3 +29,5 @@ wmcp.include_cl("wmcp/cl_key.lua")
 wmcp.include_cl("wmcp/cl_hudplayer.lua")
 
 wmcp.include_cl("wmcp/cl_media.lua")
+
+wmcp.include_cl("wmcp/cl_videodebug.lua")
