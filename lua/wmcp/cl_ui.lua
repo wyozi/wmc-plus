@@ -64,7 +64,7 @@ function wmcp.CreateMediaList(par)
 	medialist:AddColumn("ID")
 	medialist:AddColumn("Title")
 	medialist:AddColumn("Added by")
-	medialist.Columns[1]:SetFixedWidth(20)
+	medialist.Columns[1]:SetFixedWidth(29)
 	medialist.Columns[3]:SetFixedWidth(150)
 
 	-- Remove sorting by removing DButton functionality. This retains WMCPUI skin
