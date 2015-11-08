@@ -63,3 +63,14 @@ function wmcp.SetVolume(vol)
 	local clip = wmcp.GetClip()
 	if IsValid(clip) then clip:setVolume(vol) end
 end
+
+concommand.Add("wmcp_stop", function()
+	local clip = wmcp.GetClip()
+	if IsValid(clip) then
+		-- Hacky way to stop anything from happening on clip end.
+		-- For example, if a song is started from the GUI, on clip end
+		-- the next song on the GUI list will play.
+		clip._events["ended"] = nil
+		clip:stop()
+	end
+end)
