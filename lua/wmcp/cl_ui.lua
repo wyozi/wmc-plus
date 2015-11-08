@@ -110,7 +110,7 @@ function wmcp.CreateMediaList(par)
 		local e = t[mid]
 
 		if not e then return end
-			
+
 		local clip = wmcp.Play(e.url, {title = e.title})
 		if clip then
 			clip:on("ended", function()
@@ -126,7 +126,7 @@ function wmcp.CreateMediaList(par)
 
 	function medialist:OnRowRightClick(id, line)
 		if not line.MediaId then return end
-		
+
 		local menu = DermaMenu()
 
 		menu:AddOption("Play", function()
@@ -151,9 +151,17 @@ function wmcp.CreateMediaList(par)
 				RunConsoleCommand("wmcp_settitle", line.MediaId, newTitle)
 			end)
 		end):SetImage("icon16/monitor_edit.png")
+
 		menu:AddOption("Delete", function()
 			RunConsoleCommand("wmcp_del", line.MediaId)
 		end):SetImage("icon16/monitor_delete.png")
+
+		-- Parameters:
+		--   menu  - a DMenu
+		--   id    - the row ID
+		--   line  - a DListView_Line (see the function ModLine)
+		--   media - a table with the following keys: title, url, a_sid, a_nick
+		hook.Call("WMCPMedialistRowRightClick", nil, menu, id, line, t[id])
 
 		menu:Open()
 	end
@@ -271,7 +279,7 @@ function wmcp.CreatePlayer(par)
 		if meta and meta.title then
 			player.Title:SetText(meta.title)
 		end
-		
+
 		if IsValid(clip) then
 			player.Seeker:SetElapsed(clip:getTime())
 		end
