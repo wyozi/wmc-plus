@@ -18,7 +18,7 @@ else
 end
 
 local function Persist()
-	file.Write("wmcp.txt", util.TableToJSON(t))
+	file.Write("wmcp.txt", util.TableToJSON(t, true))
 end
 
 local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE, "The minimum usergroup that is allowed to add/remove/play videos.")
