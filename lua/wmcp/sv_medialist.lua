@@ -17,14 +17,14 @@ else
 	nettable.commit(t)	
 end
 
-local function Persist()
+function wmcp_Persist()
 	file.Write("wmcp.txt", util.TableToJSON(t, true))
 end
 
 local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE, "The minimum usergroup that is allowed to add/remove/play videos.")
 local wmcp_disabledebugmode = CreateConVar("wmcp_disabledebugmode", "0", FCVAR_ARCHIVE)
 
-local function IsAllowed(ply, act)
+function wmcp_IsAllowed(ply, act)
 	if not IsValid(ply) then return true end
 	if ply:IsSuperAdmin() then return true end -- always allowed
 
@@ -47,7 +47,7 @@ local function IsAllowed(ply, act)
 end
 
 concommand.Add("wmcp_add", function(ply, cmd, args, raw)
-	if not IsAllowed(ply, "add") then ply:ChatPrint("access denied") return end
+	if not wmcp_IsAllowed(ply, "add") then ply:ChatPrint("access denied") return end
 
 	local url = args[1]
 
@@ -60,11 +60,11 @@ concommand.Add("wmcp_add", function(ply, cmd, args, raw)
 		table.insert(t, {title = data.title, url = url, a_nick = ply:Nick(), a_sid = ply:SteamID()})
 		nettable.commit(t)
 
-		Persist()
+		wmcp_Persist()
 	end)
 end)
 concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
-	if not IsAllowed(ply, "edit") then ply:ChatPrint("access denied") return end
+	if not wmcp_IsAllowed(ply, "edit") then ply:ChatPrint("access denied") return end
 
 	local id = tonumber(args[1])
 	local newTitle = args[2]
@@ -74,12 +74,12 @@ concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
 	end
 
 	nettable.commit(t)
-	Persist()
+	wmcp_Persist()
 end)
 
 util.AddNetworkString("wmcp_gplay")
 concommand.Add("wmcp_play", function(ply, cmd, args, raw)
-	if not IsAllowed(ply, "play") then ply:ChatPrint("access denied") return end
+	if not wmcp_IsAllowed(ply, "play") then ply:ChatPrint("access denied") return end
 
 	local url = args[1]
 	local title = args[2]
@@ -97,11 +97,11 @@ concommand.Add("wmcp_play", function(ply, cmd, args, raw)
 	end)
 end)
 concommand.Add("wmcp_del", function(ply, cmd, args, raw)
-	if not IsAllowed(ply, "del") then ply:ChatPrint("access denied") return end
+	if not wmcp_IsAllowed(ply, "del") then ply:ChatPrint("access denied") return end
 
 	local id = tonumber(args[1])
 	if id then table.remove(t, id) end
 
 	nettable.commit(t)
-	Persist()
+	wmcp_Persist()
 end)
