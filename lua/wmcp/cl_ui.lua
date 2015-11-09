@@ -157,11 +157,11 @@ function wmcp.CreateMediaList(par)
 		end):SetImage("icon16/monitor_delete.png")
 
 		-- Parameters:
-		--   menu  - a DMenu
-		--   id    - the row ID
-		--   line  - a DListView_Line (see the function ModLine)
-		--   media - a table with the following keys: title, url, a_sid, a_nick
-		hook.Call("WMCPMedialistRowRightClick", nil, menu, id, line, t[id])
+		--   menu    - a DMenu
+		--   mediaId - the line's media ID
+		--   line    - a DListView_Line (see the function ModLine)
+		--   media   - a table with the following keys: title, url, a_sid, a_nick
+		hook.Call("WMCPMedialistRowRightClick", nil, menu, line.MediaId, line, t[line.MediaId])
 
 		menu:Open()
 	end
