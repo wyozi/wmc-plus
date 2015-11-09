@@ -210,11 +210,20 @@ function wmcp.CreateMediaList(par)
 		for id, media in pairs(e.modified) do
 			ModLine(id, media)
 		end
-		for id,_ in pairs(e.deleted) do
-			local lineid
-			for _,line in pairs(medialist.Lines) do if line.MediaId == id then lineid = line:GetID() break end end
 
-			if lineid then medialist:RemoveLine(lineid) end
+		-- Loops through checking if a media table was deleted.
+		-- If so, then remove the line from the medialist.
+		for id,v in pairs(e.deleted) do
+			-- Skip if it's not a bool and the value isn't "true".
+			if v ~= true then continue end
+
+			for _,line in pairs(medialist.Lines) do
+				if line.MediaId == id then
+					local lineid = line:GetID()
+					if lineid then medialist:RemoveLine(lineid) end
+					break
+				end
+			end
 		end
 	end)
 
