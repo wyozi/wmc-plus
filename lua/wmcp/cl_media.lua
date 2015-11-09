@@ -26,12 +26,13 @@ net.Receive("wmcp_gplay", function()
 end)
 
 function wmcp.TogglePlay(url)
-	if not IsValid(wmcp.Clip) then return end
+	local clip = wmcp.Clip
+	if not IsValid(clip) then return end
 
-	if wmcp.Clip:isPlaying() then
-		wmcp.Clip:pause()
+	if clip:isPlaying() then
+		clip:pause()
 	else
-		wmcp.Clip:play()
+		clip:play()
 	end
 end
 
@@ -39,15 +40,13 @@ function wmcp.GetClip()
 	return wmcp.Clip
 end
 function wmcp.GetClipMeta()
-	local m
-	if wmcp.ClipMeta then
-		m = table.Copy(wmcp.ClipMeta)
-	else
-		m = {}
-	end
-	
-	if wmcp.ClipOverridingMeta then
-		table.Merge(m, wmcp.ClipOverridingMeta)
+	local meta = wmcp.ClipMeta
+	local overriding = wmcp.ClipOverridingMeta
+
+	local m = meta and table.Copy(meta) or {}
+
+	if overriding then
+		table.Merge(m, overriding)
 	end
 
 	return m
@@ -60,12 +59,13 @@ end
 function wmcp.SetVolume(vol)
 	RunConsoleCommand("wmcp_volume", tostring(vol))
 
-	local clip = wmcp.GetClip()
+	local clip = wmcp.Clip
 	if IsValid(clip) then clip:setVolume(vol) end
 end
 
-concommand.Add("wmcp_stop", function()
-	local clip = wmcp.GetClip()
+function wmcp.StopClip()
+	local clip = wmcp.Clip
+
 	if IsValid(clip) then
 		-- Hacky way to stop anything from happening on clip end.
 		-- For example, if a song is started from the GUI, on clip end
@@ -73,4 +73,19 @@ concommand.Add("wmcp_stop", function()
 		clip._events["ended"] = nil
 		clip:stop()
 	end
+
+	wmcp.Clip = nil
+	wmcp.ClipMeta = nil
+	wmcp.ClipOverridingMeta = nil
+
+	if wmcp.IsOpen() then
+		local player = wmcp.Frame.Player
+		player.Title:SetText("")
+		player.Seeker:SetElapsed(nil)
+		player.Seeker:SetDuration(nil)
+	end
+end
+
+concommand.Add("wmcp_stop", function()
+	wmcp.StopClip()
 end)
