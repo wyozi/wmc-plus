@@ -60,12 +60,13 @@ function wmcp.GetVolume()
 end
 
 function wmcp.SetVolume(vol)
-	-- ConVar:SetFloat will be available next update (current date: feb 2nd 2016)
-	--wmcp_volume:SetFloat(vol)
-	RunConsoleCommand("wmcp_volume", tostring(vol))
+	wmcp_volume:SetFloat(vol)
 
 	local clip = wmcp.Clip
-	if IsValid(clip) then clip:setVolume(vol) end
+
+	if IsValid(clip) then
+		clip:setVolume(vol)
+	end
 end
 
 function wmcp.StopClip()
