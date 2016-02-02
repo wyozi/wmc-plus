@@ -100,6 +100,7 @@ end)
 
 -- if not 0 then music is muted when GMOD's window isn't focused.
 local wmcp_muteifunfocused = CreateConVar("wmcp_muteifunfocused", "0", FCVAR_ARCHIVE)
+local snd_mute_losefocus = GetConVar("snd_mute_losefocus")
 
 -- Non-Windows operating systems don't have a correct system.HasFocus() :|
 if system.IsWindows() then
@@ -116,11 +117,9 @@ if system.IsWindows() then
 			if clip:getVolume() ~= wmcpVolume then
 				clip:setVolume(wmcpVolume)
 			end
-		else
-			if wmcp_muteifunfocused:GetBool() then
-				if clip:getVolume() ~= 0 then
-					clip:setVolume(0)
-				end
+		elseif snd_mute_losefocus:GetBool() or wmcp_muteifunfocused:GetBool() then
+			if clip:getVolume() ~= 0 then
+				clip:setVolume(0)
 			end
 		end
 	end
