@@ -1,6 +1,6 @@
 function wmcp.Play(url, overridingMeta)
 	if IsValid(wmcp.Clip) then wmcp.Clip:stop() end
-	
+
 	local service = medialib.load("media").guessService(url)
 	local clip = service:load(url)
 	clip:play()
@@ -39,6 +39,7 @@ end
 function wmcp.GetClip()
 	return wmcp.Clip
 end
+
 function wmcp.GetClipMeta()
 	local meta = wmcp.ClipMeta
 	local overriding = wmcp.ClipOverridingMeta
@@ -52,11 +53,15 @@ function wmcp.GetClipMeta()
 	return m
 end
 
-local vol = CreateConVar("wmcp_volume", "1", FCVAR_ARCHIVE)
+local wmcp_volume = CreateConVar("wmcp_volume", "1", FCVAR_ARCHIVE)
+
 function wmcp.GetVolume()
-	return vol:GetFloat()
+	return wmcp_volume:GetFloat()
 end
+
 function wmcp.SetVolume(vol)
+	-- ConVar:SetFloat will be available next update (current date: feb 2nd 2016)
+	--wmcp_volume:SetFloat(vol)
 	RunConsoleCommand("wmcp_volume", tostring(vol))
 
 	local clip = wmcp.Clip
@@ -91,3 +96,33 @@ end
 concommand.Add("wmcp_stop", function()
 	wmcp.StopClip()
 end)
+
+-- if not 0 then music is muted when GMOD's window isn't focused.
+local wmcp_muteifunfocused = CreateConVar("wmcp_muteifunfocused", "0", FCVAR_ARCHIVE)
+
+-- Non-Windows operating systems don't have a correct system.HasFocus() :|
+if system.IsWindows() then
+	function wmcp.UnfocusedMuteThinkHook()
+		local clip = wmcp.Clip
+
+		if not IsValid(clip) then
+			return
+		end
+
+		if system.HasFocus() then
+			local wmcpVolume = wmcp.GetVolume()
+
+			if clip:getVolume() ~= wmcpVolume then
+				clip:setVolume(wmcpVolume)
+			end
+		else
+			if wmcp_muteifunfocused:GetBool() then
+				if clip:getVolume() ~= 0 then
+					clip:setVolume(0)
+				end
+			end
+		end
+	end
+
+	hook.Add("Think", "WMCPUnfocusedMute", wmcp.UnfocusedMuteThinkHook)
+end
