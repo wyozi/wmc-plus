@@ -14,7 +14,7 @@ else
 	Add("Right click a line to access its options", "https://www.youtube.com/watch?v=ljTYQ5ZZj7E")
 	Add("You can remove these songs by right clicking and selecting 'Delete'", "https://www.youtube.com/watch?v=X7yiV6226Xg")
 
-	nettable.commit(t)	
+	nettable.commit(t)
 end
 
 function wmcp.Persist()
@@ -63,6 +63,7 @@ concommand.Add("wmcp_add", function(ply, cmd, args, raw)
 		wmcp.Persist()
 	end)
 end)
+
 concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
 	if not wmcp.IsAllowed(ply, "edit") then ply:ChatPrint("access denied") return end
 
@@ -96,11 +97,22 @@ concommand.Add("wmcp_play", function(ply, cmd, args, raw)
 		net.Broadcast()
 	end)
 end)
+
 concommand.Add("wmcp_del", function(ply, cmd, args, raw)
 	if not wmcp.IsAllowed(ply, "del") then ply:ChatPrint("access denied") return end
 
 	local id = tonumber(args[1])
-	if id then table.remove(t, id) end
+
+	if not id or not t[id] then
+		return -- should an error be given?
+	end
+
+	if #t > 1 then
+		t[id] = t[#t] -- replace the to-be-deleted line with the last line
+		t[#t] = nil -- remove the last line
+	else
+		table.remove(t, id)
+	end
 
 	nettable.commit(t)
 	wmcp.Persist()
