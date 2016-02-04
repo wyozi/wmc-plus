@@ -113,8 +113,12 @@ function wmcp.CreateMediaList(par)
 
 		local clip = wmcp.Play(e.url, {title = e.title})
 		if clip then
-			clip:on("ended", function()
-				timer.Simple(0.5, function() Play(mid+1) end)
+			clip:on("ended", function(info)
+				if not info or not info.stopped then
+					timer.Simple(0.5, function()
+						Play(mid+1)
+					end)
+				end
 			end)
 		end
 	end
