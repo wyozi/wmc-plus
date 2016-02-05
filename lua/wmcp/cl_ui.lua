@@ -224,7 +224,17 @@ function wmcp.CreateMediaList(par)
 			for _,line in pairs(medialist.Lines) do
 				if line.MediaId == id then
 					local lineid = line:GetID()
-					if lineid then medialist:RemoveLine(lineid) end
+
+					if lineid then
+						medialist:RemoveLine(lineid)
+
+						-- Unselecting lines because it would be confusing to
+						--  see the line you just deleted to still be selected.
+						for k,v in pairs(medialist.Lines) do
+							v:SetSelected(false)
+						end
+					end
+
 					break
 				end
 			end
