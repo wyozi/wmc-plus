@@ -1,5 +1,7 @@
 function wmcp.Play(url, overridingMeta)
-	if IsValid(wmcp.Clip) then wmcp.Clip:stop() end
+	if IsValid(wmcp.Clip) then
+		wmcp.Clip:stop()
+	end
 
 	local service = medialib.load("media").guessService(url)
 	local clip = service:load(url)
@@ -73,12 +75,6 @@ function wmcp.StopClip()
 	local clip = wmcp.Clip
 
 	if IsValid(clip) then
-		-- Hacky way to stop anything from happening on clip end.
-		-- For example, if a song is started from the GUI, on clip end
-		-- the next song on the GUI list will play.
-		if clip._events then
-			clip._events["ended"] = nil
-		end
 		clip:stop()
 	end
 
