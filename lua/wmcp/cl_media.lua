@@ -18,13 +18,30 @@ function wmcp.Play(url, overridingMeta)
 		end
 	end)
 
+	print("[WMCP] Playing media (" .. os.date("%c", os.time()) .. ")")
+	print("[WMCP] URL = " .. url)
+
 	return clip
 end
 
 net.Receive("wmcp_gplay", function()
-	local url, title = net.ReadString(), net.ReadString()
-	if title == "" then title = nil end
-	wmcp.Play(url, {title = title})
+	local url = net.ReadString()
+	local title = net.ReadString()
+	--local forced = net.ReadBool()
+
+	-- add ConVar to prevent non-forced plays?
+	--if forced or blahblah:GetBool() then
+		wmcp.Play(url, {title = title})
+	--end
+end)
+
+net.Receive("wmcp_gstop", function()
+	--local forced = net.ReadBool()
+
+	-- add ConVar to prevent non-forced stops?
+	--if forced or blahblah:GetBool() then
+		wmcp.StopClip()
+	--end
 end)
 
 function wmcp.TogglePlay(url)
@@ -46,13 +63,13 @@ function wmcp.GetClipMeta()
 	local meta = wmcp.ClipMeta
 	local overriding = wmcp.ClipOverridingMeta
 
-	local m = meta and table.Copy(meta) or {}
+	meta = meta and table.Copy(meta) or {}
 
 	if overriding then
-		table.Merge(m, overriding)
+		table.Merge(meta, overriding)
 	end
 
-	return m
+	return meta
 end
 
 local wmcp_volume = CreateConVar("wmcp_volume", "1", FCVAR_ARCHIVE)

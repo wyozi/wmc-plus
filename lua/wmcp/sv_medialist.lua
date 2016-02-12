@@ -1,3 +1,6 @@
+util.AddNetworkString("wmcp_gplay")
+util.AddNetworkString("wmcp_gstop")
+
 local t = nettable.get("WMCPMedia.Main")
 
 if file.Exists("wmcp.txt", "DATA") then
@@ -5,8 +8,19 @@ if file.Exists("wmcp.txt", "DATA") then
 	table.Merge(t, util.JSONToTable(data))
 	nettable.commit(t)
 else
+	-- Add 'i' to 'time' so the items are sorted by date in descending order.
+	local i = 0
+	local time = os.time()
+
 	local function Add(text, url)
-		table.insert(t, {title = text, url = url, a_sid = "STEAM_0:1:68224691", a_nick = "Hobbes"})
+		i = i + 1
+
+		t[url] = {
+			title  = text,
+			date   = (time + i),
+			a_nick = "Hobbes",
+			a_sid  = "STEAM_0:1:68224691",
+		}
 	end
 
 	Add("Welcome to WMC Plus!", "https://www.youtube.com/watch?v=rlGF5ma3gdA")
@@ -14,7 +28,7 @@ else
 	Add("Right click a line to access its options", "https://www.youtube.com/watch?v=ljTYQ5ZZj7E")
 	Add("You can remove these songs by right clicking and selecting 'Delete'", "https://www.youtube.com/watch?v=X7yiV6226Xg")
 
-	nettable.commit(t)	
+	nettable.commit(t)
 end
 
 function wmcp.Persist()
@@ -24,83 +38,190 @@ end
 local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE, "The minimum usergroup that is allowed to add/remove/play videos.")
 local wmcp_disabledebugmode = CreateConVar("wmcp_disabledebugmode", "0", FCVAR_ARCHIVE)
 
-function wmcp.IsAllowed(ply, act)
-	if not IsValid(ply) then return true end
-	if ply:IsSuperAdmin() then return true end -- always allowed
+function wmcp.IsAllowed(plr, act)
+	if not IsValid(plr) then return true end -- server console
+	if plr:IsSuperAdmin() then return true end -- always allowed
 
 	-- Dear Backdoor Searcher,
 	-- This condition is here to make debugging easier. It allows
 	-- adding/editing/playing videos, nothing else.
-	if not wmcp_disabledebugmode:GetBool() and ply:SteamID() == "STEAM_0:1:68224691" then return true end
+	if not wmcp_disabledebugmode:GetBool() and plr:SteamID() == "STEAM_0:1:68224691" then return true end
 
 	local g = wmcp_allowed:GetString()
 	-- Check for default usergroups
-	if g == "admin" or g == "admins" then return ply:IsAdmin() end
+	if g == "admin" or g == "admins" then return plr:IsAdmin() end
 
 	-- Check for ULX usergroups
-	if ply.CheckGroup and ply:CheckGroup(g) then return true end
+	if plr.CheckGroup and plr:CheckGroup(g) then return true end
 
 	-- Check for GMod usergroups
-	if ply:IsUserGroup(g) then return true end
+	if plr:IsUserGroup(g) then return true end
 
 	return false
 end
 
-concommand.Add("wmcp_add", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "add") then ply:ChatPrint("access denied") return end
+function wmcp.GlobalPlay(url, title, force, queryCallback)
+	local service = medialib.load("media").guessService(url)
+
+	if not service then
+		return "Invalid url provided: no service found"
+	end
+
+	service:query(url, function(err, data)
+		if queryCallback then
+			-- check if callback wants to cancel
+			if queryCallback(err, data) == true then
+				return
+			end
+		end
+
+		if err then return end
+
+		net.Start("wmcp_gplay")
+		net.WriteString(url)
+		net.WriteString(title or data.title)
+		--net.WriteBool(force or false)
+		net.Broadcast()
+	end)
+end
+
+function wmcp.GlobalStop(force)
+	net.Start("wmcp_gstop")
+	--net.WriteBool(force or false)
+	net.Broadcast()
+end
+
+hook.Add("PlayerSay", "WMCPStop", function(plr, text)
+	if IsValid(plr) and text:StartWith("!stop") then
+		net.Start("wmcp_gstop")
+		--net.WriteBool(true)
+		net.Send(plr)
+	end
+end)
+
+local function printWrapper(plr, msg)
+	if IsValid(plr) then
+		plr:ChatPrint(msg)
+	else
+		print(msg)
+	end
+end
+
+concommand.Add("wmcp_add", function(plr, cmd, args, raw)
+	if not wmcp.IsAllowed(plr, "add") then
+		printWrapper(plr, "access denied")
+		return
+	end
 
 	local url = args[1]
 
+	if not url then
+		printWrapper(plr, "invalid data given")
+		return
+	end
+
 	local service = medialib.load("media").guessService(url)
-	if not service then ply:ChatPrint("Invalid url provided: no service found") return end
+
+	if not service then
+		printWrapper(plr, "Invalid url provided: no service found")
+		return
+	end
 
 	service:query(url, function(err, data)
-		if err then ply:ChatPrint("Invalid url provided: " .. err) return end
+		if err then
+			printWrapper(plr, "Invalid url provided: " .. err)
+			return
+		end
 
-		table.insert(t, {title = data.title, url = url, a_nick = ply:Nick(), a_sid = ply:SteamID()})
+		t[url] = {
+			title  = data.title,
+			date   = os.time(),
+			a_nick = plr:Nick(),
+			a_sid  = plr:SteamID()
+		}
+
 		nettable.commit(t)
-
 		wmcp.Persist()
 	end)
 end)
-concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "edit") then ply:ChatPrint("access denied") return end
 
-	local id = tonumber(args[1])
-	local newTitle = args[2]
-	if id then
-		local val = t[id]
-		if val then val.title = newTitle end
+concommand.Add("wmcp_settitle", function(plr, cmd, args, raw)
+	if not wmcp.IsAllowed(plr, "edit") then
+		printWrapper(plr, "access denied")
+		return
 	end
+
+	local url = args[1]
+	local newTitle = args[2]
+
+	if not url or not newTitle then
+		printWrapper(plr, "invalid data given")
+		return
+	end
+
+	local media = t[url]
+
+	if not media then
+		printWrapper(plr, "media does not exist")
+		return
+	end
+
+	media.title = newTitle
 
 	nettable.commit(t)
 	wmcp.Persist()
 end)
 
-util.AddNetworkString("wmcp_gplay")
-concommand.Add("wmcp_play", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "play") then ply:ChatPrint("access denied") return end
+concommand.Add("wmcp_play", function(plr, cmd, args, raw)
+	if not wmcp.IsAllowed(ply, "play") then
+		printWrapper(plr, "access denied")
+		return
+	end
 
 	local url = args[1]
 	local title = args[2]
+	local force = tobool(args[3])
 
-	local service = medialib.load("media").guessService(url)
-	if not service then ply:ChatPrint("Invalid url provided: no service found") return end
+	-- Unnecessary thingy I'm keeping to keep wmcp_play work the
+	-- same as the 'ulx gplay' command.
+	if title == "" then
+		title = nil
+	end
 
-	service:query(url, function(err, data)
-		if err then ply:ChatPrint("Invalid url provided: " .. err) return end
+	-- Callback is called after the URL was verified and before
+	-- the media is broadcast to the clients.
+	local function queryCallback(queryError, queryData)
+		if queryError then
+			printWrapper(plr, queryError)
+		end
+	end
 
-		net.Start("wmcp_gplay")
-		net.WriteString(url)
-		net.WriteString(title or "")
-		net.Broadcast()
-	end)
+	local err = wmcp.GlobalPlay(url, title, force, queryCallback)
+
+	if err then
+		printWrapper(plr, err)
+	end
 end)
-concommand.Add("wmcp_del", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "del") then ply:ChatPrint("access denied") return end
 
-	local id = tonumber(args[1])
-	if id then table.remove(t, id) end
+concommand.Add("wmcp_del", function(plr, cmd, args, raw)
+	if not wmcp.IsAllowed(ply, "del") then
+		printWrapper(plr, "access denied")
+		return
+	end
+
+	local url = args[1]
+
+	if not url then
+		printWrapper(plr, "invalid url given")
+		return
+	end
+
+	if not t[url] then
+		printWrapper(plr, "media does not exist")
+		return
+	end
+
+	t[url] = nil
 
 	nettable.commit(t)
 	wmcp.Persist()

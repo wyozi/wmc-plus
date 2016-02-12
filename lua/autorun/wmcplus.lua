@@ -4,9 +4,11 @@ function wmcp.include_cl(file)
 	if SERVER then AddCSLuaFile(file) end
 	if CLIENT then include(file) end
 end
+
 function wmcp.include_sv(file)
 	if SERVER then include(file) end
 end
+
 function wmcp.include_sh(file)
 	wmcp.include_cl(file)
 	wmcp.include_sv(file)

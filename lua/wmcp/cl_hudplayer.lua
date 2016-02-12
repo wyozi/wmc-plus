@@ -22,7 +22,7 @@ local function CreateMiniPlayer()
 		end
 
 		local meta = wmcp.GetClipMeta()
-		
+
 		local frac = 0
 		if meta and meta.duration then frac = clip:getTime() / meta.duration end
 
