@@ -60,17 +60,19 @@ function wmcp.IsAllowed(plr, act)
 	return false
 end
 
-function wmcp.GlobalPlay(url, title, force, queryCallback)
+-- plrs can be a table of players, a player, or nil (to send to everyone)
+function wmcp.PlayFor(plrs, url, title, force, callback)
 	local service = medialib.load("media").guessService(url)
 
 	if not service then
-		return "Invalid url provided: no service found"
+		callback("Invalid url provided: no service found", nil)
+		return
 	end
 
 	service:query(url, function(err, data)
-		if queryCallback then
+		if callback then
 			-- check if callback wants to cancel
-			if queryCallback(err, data) == true then
+			if callback(err, data) == true then
 				return
 			end
 		end
@@ -81,21 +83,28 @@ function wmcp.GlobalPlay(url, title, force, queryCallback)
 		net.WriteString(url)
 		net.WriteString(title or data.title)
 		--net.WriteBool(force or false)
-		net.Broadcast()
+		if plrs then
+			net.Send(plrs)
+		else
+			net.Broadcast()
+		end
 	end)
 end
 
-function wmcp.GlobalStop(force)
+-- plrs can be a table of players, a player, or nil (to send to everyone)
+function wmcp.StopFor(plrs, force)
 	net.Start("wmcp_gstop")
-	--net.WriteBool(force or false)
-	net.Broadcast()
+	--net.WriteBool(tobool(force))
+	if plrs then
+		net.Send(plrs)
+	else
+		net.Broadcast()
+	end
 end
 
 hook.Add("PlayerSay", "WMCPStop", function(plr, text)
 	if IsValid(plr) and text:StartWith("!stop") then
-		net.Start("wmcp_gstop")
-		--net.WriteBool(true)
-		net.Send(plr)
+		wmcp.StopFor(plr, true)
 	end
 end)
 
@@ -188,19 +197,11 @@ concommand.Add("wmcp_play", function(plr, cmd, args, raw)
 		title = nil
 	end
 
-	-- Callback is called after the URL was verified and before
-	-- the media is broadcast to the clients.
-	local function queryCallback(queryError, queryData)
-		if queryError then
-			printWrapper(plr, queryError)
+	wmcp.PlayFor(nil, url, title, force, function(err, data)
+		if err then
+			printWrapper(plr, err)
 		end
-	end
-
-	local err = wmcp.GlobalPlay(url, title, force, queryCallback)
-
-	if err then
-		printWrapper(plr, err)
-	end
+	end)
 end)
 
 concommand.Add("wmcp_del", function(plr, cmd, args, raw)
