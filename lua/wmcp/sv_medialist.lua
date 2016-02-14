@@ -35,17 +35,12 @@ function wmcp.Persist()
 	file.Write("wmcp.txt", util.TableToJSON(t, true))
 end
 
-local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE, "The minimum usergroup that is allowed to add/remove/play videos.")
-local wmcp_disabledebugmode = CreateConVar("wmcp_disabledebugmode", "0", FCVAR_ARCHIVE)
+local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE,
+	"The minimum usergroup that is allowed to add/remove/play videos.")
 
 function wmcp.IsAllowed(plr, act)
 	if not IsValid(plr) then return true end -- server console
 	if plr:IsSuperAdmin() then return true end -- always allowed
-
-	-- Dear Backdoor Searcher,
-	-- This condition is here to make debugging easier. It allows
-	-- adding/editing/playing videos, nothing else.
-	if not wmcp_disabledebugmode:GetBool() and plr:SteamID() == "STEAM_0:1:68224691" then return true end
 
 	local g = wmcp_allowed:GetString()
 	-- Check for default usergroups
