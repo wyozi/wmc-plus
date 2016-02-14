@@ -117,7 +117,7 @@ local function printWrapper(plr, msg)
 end
 
 concommand.Add("wmcp_add", function(plr, cmd, args, raw)
-	if not wmcp.IsAllowed(plr, "add") then
+	if not wmcp.IsAllowed(plr, cmd) then
 		printWrapper(plr, "access denied")
 		return
 	end
@@ -155,7 +155,7 @@ concommand.Add("wmcp_add", function(plr, cmd, args, raw)
 end)
 
 concommand.Add("wmcp_settitle", function(plr, cmd, args, raw)
-	if not wmcp.IsAllowed(plr, "edit") then
+	if not wmcp.IsAllowed(plr, cmd) then
 		printWrapper(plr, "access denied")
 		return
 	end
@@ -181,8 +181,8 @@ concommand.Add("wmcp_settitle", function(plr, cmd, args, raw)
 	wmcp.Persist()
 end)
 
-concommand.Add("wmcp_play", function(plr, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "play") then
+concommand.Add("wmcp_gplay", function(plr, cmd, args, raw)
+	if not wmcp.IsAllowed(ply, cmd) then
 		printWrapper(plr, "access denied")
 		return
 	end
@@ -204,8 +204,19 @@ concommand.Add("wmcp_play", function(plr, cmd, args, raw)
 	end)
 end)
 
+concommand.Add("wmcp_gstop", function(plr, cmd, args, raw)
+	if not wmcp.IsAllowed(ply, cmd) then
+		printWrapper(plr, "access denied")
+		return
+	end
+
+	local force = tobool(args[1])
+
+	wmcp.StopFor(nil, force)
+end)
+
 concommand.Add("wmcp_del", function(plr, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "del") then
+	if not wmcp.IsAllowed(ply, cmd) then
 		printWrapper(plr, "access denied")
 		return
 	end

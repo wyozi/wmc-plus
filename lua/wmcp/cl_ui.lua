@@ -252,7 +252,7 @@ function wmcp.CreateMediaList(par)
 			end
 		else
 			menu:AddOption("Play for Everyone", function()
-				RunConsoleCommand("wmcp_play", line.url, line:GetColumnText(2))
+				RunConsoleCommand("wmcp_gplay", line.url, line:GetColumnText(2))
 			end):SetImage("icon16/control_play_blue.png")
 		end
 
