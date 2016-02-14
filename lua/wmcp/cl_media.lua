@@ -24,7 +24,7 @@ function wmcp.Play(url, overridingMeta)
 	return clip
 end
 
-net.Receive("wmcp_gplay", function()
+net.Receive("wmcp_play_msg", function()
 	local url = net.ReadString()
 	local title = net.ReadString()
 	--local forced = net.ReadBool()
@@ -35,7 +35,7 @@ net.Receive("wmcp_gplay", function()
 	--end
 end)
 
-net.Receive("wmcp_gstop", function()
+net.Receive("wmcp_stop_msg", function()
 	--local forced = net.ReadBool()
 
 	-- add ConVar to prevent non-forced stops?

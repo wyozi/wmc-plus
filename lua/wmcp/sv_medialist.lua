@@ -1,5 +1,5 @@
-util.AddNetworkString("wmcp_gplay")
-util.AddNetworkString("wmcp_gstop")
+util.AddNetworkString("wmcp_play_msg")
+util.AddNetworkString("wmcp_stop_msg")
 
 local t = nettable.get("WMCPMedia.Main")
 
@@ -79,7 +79,7 @@ function wmcp.PlayFor(plrs, url, title, force, callback)
 
 		if err then return end
 
-		net.Start("wmcp_gplay")
+		net.Start("wmcp_play_msg")
 		net.WriteString(url)
 		net.WriteString(title or data.title)
 		--net.WriteBool(force or false)
@@ -93,7 +93,7 @@ end
 
 -- plrs can be a table of players, a player, or nil (to send to everyone)
 function wmcp.StopFor(plrs, force)
-	net.Start("wmcp_gstop")
+	net.Start("wmcp_stop_msg")
 	--net.WriteBool(tobool(force))
 	if plrs then
 		net.Send(plrs)
