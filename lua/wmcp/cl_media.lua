@@ -27,21 +27,23 @@ end
 net.Receive("wmcp_play_msg", function()
 	local url = net.ReadString()
 	local title = net.ReadString()
-	--local forced = net.ReadBool()
+	local opts = net.ReadTable()
 
-	-- add ConVar to prevent non-forced plays?
-	--if forced or blahblah:GetBool() then
+	local block = hook.Run("WMCPPlayNetMsg", url, title, opts)
+
+	if not block then
 		wmcp.Play(url, {title = title})
-	--end
+	end
 end)
 
 net.Receive("wmcp_stop_msg", function()
-	--local forced = net.ReadBool()
+	local opts = net.ReadTable()
 
-	-- add ConVar to prevent non-forced stops?
-	--if forced or blahblah:GetBool() then
+	local block = hook.Run("WMCPStopNetMsg", opts)
+
+	if not block then
 		wmcp.StopClip()
-	--end
+	end
 end)
 
 function wmcp.TogglePlay(url)
