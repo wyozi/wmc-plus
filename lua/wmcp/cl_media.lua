@@ -24,14 +24,16 @@ function wmcp.Play(url, overridingMeta)
 	return clip
 end
 
+local wmcp_enabled = CreateConVar("wmcp_enabled", "1", FCVAR_ARCHIVE)
+
 net.Receive("wmcp_play_msg", function()
 	local url = net.ReadString()
 	local title = net.ReadString()
 	local opts = net.ReadTable()
 
-	local block = hook.Run("WMCPPlayNetMsg", url, title, opts)
+	if not wmcp_enabled:GetBool() then return end
 
-	if not block then
+	if opts.force or hook.Run("WMCPPlayNetMsg", url, title, opts) then
 		wmcp.Play(url, {title = title})
 	end
 end)
@@ -39,9 +41,9 @@ end)
 net.Receive("wmcp_stop_msg", function()
 	local opts = net.ReadTable()
 
-	local block = hook.Run("WMCPStopNetMsg", opts)
+	if not wmcp_enabled:GetBool() then return end
 
-	if not block then
+	if opts.force or hook.Run("WMCPStopNetMsg", opts) then
 		wmcp.StopClip()
 	end
 end)
