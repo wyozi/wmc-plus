@@ -56,7 +56,7 @@ function wmcp.IsAllowed(plr, act)
 end
 
 -- plrs can be a table of players, a player, or nil (to send to everyone)
-function wmcp.PlayFor(plrs, url, title, force, callback)
+function wmcp.PlayFor(plrs, url, title, opts, callback)
 	local service = medialib.load("media").guessService(url)
 
 	if not service then
@@ -77,7 +77,7 @@ function wmcp.PlayFor(plrs, url, title, force, callback)
 		net.Start("wmcp_play_msg")
 		net.WriteString(url)
 		net.WriteString(title or data.title)
-		--net.WriteBool(force or false)
+		net.WriteTable(opts or {})
 		if plrs then
 			net.Send(plrs)
 		else
@@ -87,9 +87,9 @@ function wmcp.PlayFor(plrs, url, title, force, callback)
 end
 
 -- plrs can be a table of players, a player, or nil (to send to everyone)
-function wmcp.StopFor(plrs, force)
+function wmcp.StopFor(plrs, opts)
 	net.Start("wmcp_stop_msg")
-	--net.WriteBool(tobool(force))
+	net.WriteTable(opts or {})
 	if plrs then
 		net.Send(plrs)
 	else
@@ -99,7 +99,7 @@ end
 
 hook.Add("PlayerSay", "WMCPStop", function(plr, text)
 	if IsValid(plr) and text:StartWith("!stop") then
-		wmcp.StopFor(plr, true)
+		wmcp.StopFor(plr, {force = true})
 	end
 end)
 
@@ -192,7 +192,7 @@ concommand.Add("wmcp_gplay", function(plr, cmd, args, raw)
 		title = nil
 	end
 
-	wmcp.PlayFor(nil, url, title, force, function(err, data)
+	wmcp.PlayFor(nil, url, title, {force = force}, function(err, data)
 		if err then
 			printWrapper(plr, err)
 		end
@@ -207,7 +207,7 @@ concommand.Add("wmcp_gstop", function(plr, cmd, args, raw)
 
 	local force = tobool(args[1])
 
-	wmcp.StopFor(nil, force)
+	wmcp.StopFor(nil, {force = force})
 end)
 
 concommand.Add("wmcp_del", function(plr, cmd, args, raw)

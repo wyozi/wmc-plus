@@ -4,7 +4,7 @@ local function playFunc(caller, targets, url, title, force, silent)
 		title = nil
 	end
 
-	wmcp.PlayFor(targets, url, title, force, function(err, data)
+	wmcp.PlayFor(targets, url, title, {force = force}, function(err, data)
 		-- ULX handles an invalid player as the server console so we don't
 		-- need to add anything to fix caller.
 
@@ -24,7 +24,7 @@ local function playFunc(caller, targets, url, title, force, silent)
 end
 
 local function stopFunc(caller, targets, force, silent)
-	wmcp.StopFor(targets, force)
+	wmcp.StopFor(targets, {force = force})
 
 	local blah = "#A stopped media".. (targets and " on #T" or "")
 
