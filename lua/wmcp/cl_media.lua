@@ -33,8 +33,8 @@ net.Receive("wmcp_play_msg", function()
 
 	if not wmcp_enabled:GetBool() then return end
 
-	if opts.force or hook.Run("WMCPPlayNetMsg", url, title, opts) then
-		wmcp.Play(url, {title = title})
+	if opts.force or (hook.Run("WMCPPlayNetMsg", url, title, opts) ~= false) then
+		wmcp.Play(url, {title = title, opts = opts})
 	end
 end)
 
@@ -43,7 +43,7 @@ net.Receive("wmcp_stop_msg", function()
 
 	if not wmcp_enabled:GetBool() then return end
 
-	if opts.force or hook.Run("WMCPStopNetMsg", opts) then
+	if opts.force or (hook.Run("WMCPStopNetMsg", opts) ~= false) then
 		wmcp.StopClip()
 	end
 end)
