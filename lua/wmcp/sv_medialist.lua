@@ -3,6 +3,10 @@ util.AddNetworkString("wmcp_stop_msg")
 
 local t = nettable.get("WMCPMedia.Main")
 
+function wmcp.Persist()
+	file.Write("wmcp.txt", util.TableToJSON(t, true))
+end
+
 if file.Exists("wmcp.txt", "DATA") then
 	local json = file.Read("wmcp.txt", "DATA")
 	local stuff = util.JSONToTable(json)
@@ -50,10 +54,6 @@ else
 	Add("You can remove these songs by right clicking and selecting 'Delete'", "https://www.youtube.com/watch?v=X7yiV6226Xg")
 
 	nettable.commit(t)
-end
-
-function wmcp.Persist()
-	file.Write("wmcp.txt", util.TableToJSON(t, true))
 end
 
 local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE,
