@@ -4,8 +4,29 @@ util.AddNetworkString("wmcp_stop_msg")
 local t = nettable.get("WMCPMedia.Main")
 
 if file.Exists("wmcp.txt", "DATA") then
-	local data = file.Read("wmcp.txt", "DATA")
-	table.Merge(t, util.JSONToTable(data))
+	local json = file.Read("wmcp.txt", "DATA")
+	local stuff = util.JSONToTable(json)
+
+	-- We're using an older WMCP data file that didn't use URLs as the table key
+	if stuff[1] then
+		file.Write("backup.wmcp.txt", json)
+		-- do this time thing for date sorting and stuff
+		local time = os.time() - #stuff
+		local new = {}
+
+		for i, media in ipairs(stuff) do
+			new[media.url] = media
+			media.url = nil
+			media.date = time
+			time = time + 1
+		end
+
+		table.Merge(t, new)
+		wmcp.Persist()
+	else
+		table.Merge(t, stuff)
+	end
+
 	nettable.commit(t)
 else
 	-- Add 'i' to 'time' so the items are sorted by date in descending order.
