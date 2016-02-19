@@ -17,7 +17,7 @@ SKIN.Colours.Button.Hover				= Color(255, 255, 255)
 SKIN.Colours.Button.Down				= Color(255, 255, 255)
 SKIN.Colours.Button.Disabled			= Color(255, 255, 255)
 
-SKIN.Colours.Button.BackgroundNormal				= Color(149, 165, 166)
+SKIN.Colours.Button.BackgroundNormal				= Color(48, 48, 48)--Color(149, 165, 166)
 SKIN.Colours.Button.BackgroundDisabled				= Color(48, 48, 48)
 SKIN.Colours.Button.BackgroundOutline				= Color(255, 255, 255)
 
@@ -95,7 +95,7 @@ function SKIN:PaintButton( panel, w, h )
 		clr = HSVToColor(h, s, v + 0.1)
 	end
 
-	if ( panel:GetDisabled() ) then
+	if ( panel:GetDisabled() ) then--or ( panel:GetParent():GetName() == "DListView_Column" ) then
 		clr = self.Colors.Button.BackgroundDisabled
 	end
 
