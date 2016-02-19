@@ -1,9 +1,17 @@
 function wmcp.OpenUI()
-	local fr = vgui.Create("DFrame")
+	local fr = wmcp.Frame
+
+	if IsValid(fr) then
+		fr:Show()
+		return
+	end
+
+	fr = vgui.Create("DFrame")
 	fr:SetSkin("WMCPUI")
 	fr:SetTitle("Wyozi Media Center Plus")
 	fr:SetSizable(true)
 
+	fr:SetDeleteOnClose(false)
 	fr:ShowCloseButton(false)
 
 	fr:SetSize(900, 600)
@@ -51,41 +59,123 @@ function wmcp.CloseUI()
 end
 
 concommand.Add("wmcp", function()
-	wmcp.OpenUI()
+	if wmcp.IsOpen() then
+		wmcp.CloseUI()
+	else
+		wmcp.OpenUI()
+	end
 end)
 
+local function makeSortingNames(par)
+	for k, v in ipairs(par.Columns) do
+		local name = v.Header:GetText()
+		local changed = false
+
+		local up   = "/\\ " --"↑ "
+		local down = "\\/ " --"↓ "
+
+		-- This assumes the variables 'up' and 'down' have the same number
+		-- of bytes in the string. It also assumes that the 'up' or 'down'
+		-- string can be find at the very beginning of the variable 'name'.
+		-- You wouldn't break these assumptions...would you?
+		if name:find(up, 1, true) or name:find(down, 1, true) then
+			name = name:sub(up:len() + 1)
+			changed = true
+		end
+
+		if k == par.sortColumn then
+			name = (par.sortDescending and down or up) .. name
+			changed = true
+		end
+
+		if changed then
+			v:SetName(name)
+		end
+	end
+end
+
+local function columnDoClick(self)
+	local myID = self:GetColumnID()
+	local par = self:GetParent()
+
+	if par.sortColumn == myID then
+		par.sortDescending = not par.sortDescending
+	else
+		par.sortColumn = myID
+		par.sortDescending = true
+	end
+
+	makeSortingNames(par)
+	par:DataLayout()
+end
+
 local t = nettable.get("WMCPMedia.Main")
+
 function wmcp.CreateMediaList(par)
 	local medialist = par:Add("DListView")
 	medialist:SetHeaderHeight(22)
 	medialist:SetDataHeight(22)
 	medialist:SetMultiSelect(false)
 	medialist:Dock(FILL)
-	medialist:AddColumn("ID")
-	medialist:AddColumn("Title")
-	medialist:AddColumn("Added by")
-	medialist.Columns[1]:SetFixedWidth(29)
-	medialist.Columns[3]:SetFixedWidth(150)
 
-	-- Remove sorting by removing DButton functionality. This retains WMCPUI skin
-	for _,v in pairs(medialist.Columns) do v.Header:SetDisabled(true) v.DoClick = function() end end
+	local columnDate = medialist:AddColumn("\\/ Date")--("↓ Date")
+	local columnTitle = medialist:AddColumn("Title")
+	local columnAddedBy = medialist:AddColumn("Added by")
+
+	columnDate:SetFixedWidth(100)
+	columnAddedBy:SetFixedWidth(150)
+
+	columnDate.DoClick = columnDoClick
+	columnTitle.DoClick = columnDoClick
+	columnAddedBy.DoClick = columnDoClick
+
+	medialist.sortColumn = 1 -- sort by date
+	medialist.sortDescending = true -- sort in descending order by default
 
 	-- Hack DataLayout to sort items before doing whatever DataLayout does
 	local olddl = medialist.DataLayout
 	medialist.DataLayout = function(self)
 		table.Copy(self.Sorted, self.Lines)
+
 		table.sort(self.Sorted, function(a, b)
-			local aval = tonumber(a:GetColumnText(1))
-			local bval = tonumber(b:GetColumnText(1))
-			if not aval then return false end
-			if not bval then return true end
-			return  aval < bval
+			-- Return 'true' if 'a' should move up.
+
+			-- Grab the dates to check for the add-video button.
+			local atext = a:GetColumnText(1)
+			local btext = b:GetColumnText(1)
+
+			-- The date column of the add-video button is "".
+			-- So we just keep it moving down to the bottom.
+			if atext == "" then return false end
+			if btext == "" then return true end
+
+			local column = self.sortColumn
+			local descending = self.sortDescending
+
+			-- Sorting by the 'Title' or 'Added by' column.
+			if column ~= 1 then
+				atext = a:GetColumnText(column)
+				btext = b:GetColumnText(column)
+
+				if column == 3 then
+					-- :GetColumnText on the "Added by" column returns a
+					--  "WMCPlayerCell" panel.
+					atext = atext.NickLabel:GetText()
+					btext = btext.NickLabel:GetText()
+				end
+			end
+
+			if descending then
+				return atext < btext
+			else
+				return atext > btext
+			end
 		end)
 
 		return olddl(self)
 	end
 
-	-- Add "add new video" entry as the last row
+	-- Add "add new video" entry as the last row.
 	do
 		local adder = vgui.Create("DButton")
 		adder.BGTint = Color(145, 61, 136)
@@ -106,45 +196,78 @@ function wmcp.CreateMediaList(par)
 		end
 	end
 
-	local function Play(mid)
-		local e = t[mid]
+	local function Play(url)
+		local media = t[url]
 
-		if not e then return end
+		if not media then
+			chat.AddText("invalid media")
+			return
+		end
 
-		local clip = wmcp.Play(e.url, {title = e.title})
+		local clip = wmcp.Play(url, {title = media.title})
+
 		if clip then
 			clip:on("ended", function(info)
-				if not info or not info.stopped then
-					timer.Simple(0.5, function()
-						Play(mid+1)
-					end)
+				if info and info.stopped then
+					return
 				end
+
+				-- Play the media in the next line.
+				-- Will have problems if the playing media is deleted.
+				timer.Simple(0.5, function()
+					local isnext = false
+					for k, line in ipairs(medialist.Sorted) do
+						-- a nice little bird-nest here
+						if isnext then
+							Play(line.url)
+							return
+						end
+
+						if line.url == url then
+							isnext = true
+						end
+					end
+				end)
 			end)
 		end
 	end
 
 	function medialist:DoDoubleClick(id, line)
-		if not line.MediaId then return end
-		Play(line.MediaId)
+		if line.url then
+			Play(line.url)
+		end
 	end
 
 	function medialist:OnRowRightClick(id, line)
-		if not line.MediaId then return end
+		if not line.url then return end
 
 		local menu = DermaMenu()
 
 		menu:AddOption("Play", function()
-			Play(line.MediaId)
+			Play(line.url)
 		end):SetImage("icon16/control_play.png")
 
-		menu:AddOption("Play for Everyone", function()
-			RunConsoleCommand("wmcp_play", line.Url, line:GetColumnText(2))
-		end):SetImage("icon16/control_play_blue.png")
+		if ULib then
+			local button = menu:AddOption("Play for Everyone", function()
+				RunConsoleCommand("ulx", "gplay", line.url, line:GetColumnText(2))
+			end)
+
+			button:SetImage("icon16/control_play_blue.png")
+
+			if not ULib.ucl.query(LocalPlayer(), "ulx gplay", true) then
+				button:SetDisabled(true)
+				button:SetColor(Color(0, 166, 147)) -- lighten the text color
+			end
+		else
+			menu:AddOption("Play for Everyone", function()
+				RunConsoleCommand("wmcp_gplay", line.url, line:GetColumnText(2))
+			end):SetImage("icon16/control_play_blue.png")
+		end
 
 		menu:AddSpacer()
 
 		menu:AddOption("Copy URL", function()
-			SetClipboardText(line.Url)
+			SetClipboardText(line.url)
 		end):SetImage("icon16/paste_plain.png")
 
 		menu:AddSpacer()
@@ -152,79 +275,83 @@ function wmcp.CreateMediaList(par)
 		menu:AddOption("Set title", function()
 			local title = line:GetColumnText(2)
 			Derma_StringRequest("WMCP: Set title", "Set title of '" .. title .. "'", title, function(newTitle)
-				RunConsoleCommand("wmcp_settitle", line.MediaId, newTitle)
+				RunConsoleCommand("wmcp_settitle", line.url, newTitle)
 			end)
 		end):SetImage("icon16/monitor_edit.png")
 
 		menu:AddOption("Delete", function()
-			RunConsoleCommand("wmcp_del", line.MediaId)
+			RunConsoleCommand("wmcp_del", line.url)
 		end):SetImage("icon16/monitor_delete.png")
 
 		-- Parameters:
 		--   menu    - a DMenu
-		--   mediaId - the line's media ID
 		--   line    - a DListView_Line (see the function ModLine)
-		--   media   - a table with the following keys: title, url, a_sid, a_nick
-		hook.Call("WMCPMedialistRowRightClick", nil, menu, line.MediaId, line, t[line.MediaId])
+		--   url     - a string with the media's URL
+		--   media   - a table with the following keys: title, a_sid, a_nick
+		hook.Call("WMCPMedialistRowRightClick", nil, menu, line, line.url, t[line.url])
 
 		menu:Open()
 	end
 
-	local function ModLine(id, media)
+	local function ModLine(url, media)
 		local line
-		for _,iline in pairs(medialist.Lines) do
-			if iline.MediaId == id then
-				line = iline
+
+		for _, v in ipairs(medialist.Lines) do
+			if v.url == url then
+				line = v
 				break
 			end
 		end
 
 		if not line then
-			line = medialist:AddLine(id)
+			line = medialist:AddLine(os.date("%c", media.date))
 			line:SetCursor("hand")
-			line.ActiveCond = function(pself)
-				local clip = wmcp.GetClip()
-				return clip and clip:getUrl() == pself.Url
-			end
-		end
 
-		line.MediaId = id
+			line.ActiveCond = function(self)
+				local clip = wmcp.GetClip()
+				return clip and clip:getUrl() == self.url
+			end
+
+			line.url = url
+		end
 
 		if media.title then
 			line:SetColumnText(2, media.title):SetFont("WMCPUINormalFont")
 		end
+
 		if media.a_sid and media.a_nick then
-			local plycell = line:Add("WMCPlayerCell")
-			plycell.NickLabel:SetFont("WMCPUINormalFont")
-			plycell:SetSIDNick(media.a_sid, media.a_nick)
-			line:SetColumnText(3, plycell)
-		end
-		if media.url then
-			line.Url = media.url
+			local plrcell = line:Add("WMCPlayerCell")
+			plrcell.NickLabel:SetFont("WMCPUINormalFont")
+			plrcell:SetSIDNick(media.a_sid, media.a_nick)
+			line:SetColumnText(3, plrcell)
 		end
 	end
 
-	for id,media in pairs(t) do
-		ModLine(id, media)
+	for url, media in pairs(t) do
+		ModLine(url, media)
 	end
 
 	nettable.setChangeListener(t, "UIUpdater", function(e)
 		if not IsValid(medialist) then return end
 
-		for id, media in pairs(e.modified) do
-			ModLine(id, media)
+		for url, media in pairs(e.modified) do
+			ModLine(url, media)
 		end
 
 		-- Loops through checking if a media table was deleted.
 		-- If so, then remove the line from the medialist.
-		for id,v in pairs(e.deleted) do
-			-- Skip if it's not a bool and the value isn't "true".
+		for url, v in pairs(e.deleted) do
+			-- Skip if the media table itself isn't being deleted.
 			if v ~= true then continue end
 
-			for _,line in pairs(medialist.Lines) do
-				if line.MediaId == id then
-					local lineid = line:GetID()
-					if lineid then medialist:RemoveLine(lineid) end
+			for _, line in pairs(medialist.Lines) do
+				if line.url == url then
+					local lineID = line:GetID()
+
+					if lineID then
+						medialist:RemoveLine(lineID)
+					end
+
 					break
 				end
 			end
@@ -238,6 +365,7 @@ surface.CreateFont("WMCPMediaTitle", {
 	font = "Roboto",
 	size = 22
 })
+
 function wmcp.CreatePlayer(par)
 	local player = par:Add("DPanel")
 	par.Player = player
@@ -282,6 +410,7 @@ function wmcp.CreatePlayer(par)
 
 	function player:Think()
 		local clip = wmcp.GetClip()
+
 		if IsValid(clip) and clip:isPlaying() then
 			player.Play:SetText("Pause")
 		else
@@ -289,6 +418,7 @@ function wmcp.CreatePlayer(par)
 		end
 
 		local meta = wmcp.GetClipMeta()
+
 		if meta and meta.title then
 			player.Title:SetText(meta.title)
 		end
@@ -296,10 +426,12 @@ function wmcp.CreatePlayer(par)
 		if IsValid(clip) then
 			player.Seeker:SetElapsed(clip:getTime())
 		end
+
 		if meta and meta.duration then
 			player.Seeker:SetDuration(meta.duration)
 		end
 	end
+
 	function player:PerformLayout()
 		local mid = self:GetWide() / 2
 		self.Play:SetPos(5, 22)

@@ -18,13 +18,34 @@ function wmcp.Play(url, overridingMeta)
 		end
 	end)
 
+	print("[WMCP] Playing media (" .. os.date("%c", os.time()) .. ")")
+	print("[WMCP] URL = " .. url)
+
 	return clip
 end
 
-net.Receive("wmcp_gplay", function()
-	local url, title = net.ReadString(), net.ReadString()
-	if title == "" then title = nil end
-	wmcp.Play(url, {title = title})
+local wmcp_enabled = CreateConVar("wmcp_enabled", "1", FCVAR_ARCHIVE)
+
+net.Receive("wmcp_play_msg", function()
+	local url = net.ReadString()
+	local title = net.ReadString()
+	local opts = net.ReadTable()
+
+	if not wmcp_enabled:GetBool() then return end
+
+	if opts.force or (hook.Run("WMCPPlayNetMsg", url, title, opts) ~= false) then
+		wmcp.Play(url, {title = title, opts = opts})
+	end
+end)
+
+net.Receive("wmcp_stop_msg", function()
+	local opts = net.ReadTable()
+
+	if not wmcp_enabled:GetBool() then return end
+
+	if opts.force or (hook.Run("WMCPStopNetMsg", opts) ~= false) then
+		wmcp.StopClip()
+	end
 end)
 
 function wmcp.TogglePlay(url)
@@ -46,13 +67,13 @@ function wmcp.GetClipMeta()
 	local meta = wmcp.ClipMeta
 	local overriding = wmcp.ClipOverridingMeta
 
-	local m = meta and table.Copy(meta) or {}
+	meta = meta and table.Copy(meta) or {}
 
 	if overriding then
-		table.Merge(m, overriding)
+		table.Merge(meta, overriding)
 	end
 
-	return m
+	return meta
 end
 
 local wmcp_volume = CreateConVar("wmcp_volume", "1", FCVAR_ARCHIVE)

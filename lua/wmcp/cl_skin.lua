@@ -17,7 +17,7 @@ SKIN.Colours.Button.Hover				= Color(255, 255, 255)
 SKIN.Colours.Button.Down				= Color(255, 255, 255)
 SKIN.Colours.Button.Disabled			= Color(255, 255, 255)
 
-SKIN.Colours.Button.BackgroundNormal				= Color(149, 165, 166)
+SKIN.Colours.Button.BackgroundNormal				= Color(48, 48, 48)--Color(149, 165, 166)
 SKIN.Colours.Button.BackgroundDisabled				= Color(48, 48, 48)
 SKIN.Colours.Button.BackgroundOutline				= Color(255, 255, 255)
 
@@ -62,7 +62,7 @@ SKIN.fontFrame = "WMCPUIFrameFont"
 function SKIN:UpdateLabel(lbl)
 	if lbl:GetFont() == "DermaDefault" then lbl:SetFont("WMCPUINormalFont") end
 end
- 
+
 function SKIN:PaintFrame( panel, w, h )
 	local isGrayed = not panel:HasHierarchicalFocus()
 
@@ -82,23 +82,23 @@ end
 
 function SKIN:PaintButton( panel, w, h )
 	if ( !panel.m_bBackground ) then return end
-	
+
 	local clr = panel.BGTint or self.Colors.Button.BackgroundNormal
-	
+
 	if ( panel.Depressed || panel:IsSelected() || panel:GetToggle() ) then
 		local h, s, v = ColorToHSV(clr)
 		clr = HSVToColor(h, s, v + 0.12)
 	end
-	
+
 	if ( panel.Hovered ) then
 		local h, s, v = ColorToHSV(clr)
 		clr = HSVToColor(h, s, v + 0.1)
 	end
 
-	if ( panel:GetDisabled() ) then
+	if ( panel:GetDisabled() ) then--or ( panel:GetParent():GetName() == "DListView_Column" ) then
 		clr = self.Colors.Button.BackgroundDisabled
 	end
-	
+
 	surface.SetDrawColor(clr)
 	surface.DrawRect(0, 0, w, h)
 
@@ -125,5 +125,5 @@ function SKIN:PaintListViewLine( panel, w, h )
 		self.tex.Input.ListBox.EvenLine( 0, 0, w, h )
 	end
 end
- 
+
 derma.DefineSkin("WMCPUI", "Fun fun fun fun", SKIN)
