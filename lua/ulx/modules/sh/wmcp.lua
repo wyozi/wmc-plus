@@ -89,6 +89,7 @@ pstop:addParam{ type = ULib.cmds.BoolArg, hint = "silent",  ULib.cmds.optional }
 pstop:defaultAccess( ULib.ACCESS_ADMIN )
 pstop:help("Ends music being played by WMCP.")
 
+
 if not CLIENT then return end
 
 hook.Add("WMCPMedialistRowRightClick", "ulxhtinges", function(menu, line, url, media)
@@ -99,7 +100,7 @@ hook.Add("WMCPMedialistRowRightClick", "ulxhtinges", function(menu, line, url, m
 
 	for _,plr in pairs(player.GetAll()) do
 		submenu:AddOption(plr:Nick(), function()
-			RunConsoleCommand("ulx", "pplay", plr:Nick(), url)
+			RunConsoleCommand("ulx", "pplay", plr:Nick(), url, line:GetColumnText(2))
 		end):SetIcon("icon16/emoticon_tongue.png")
 	end
 end, HOOK_HIGH) -- high hook thing so it goes aboeve eveyrthing in the worlds
