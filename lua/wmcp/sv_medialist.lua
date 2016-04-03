@@ -14,7 +14,7 @@ else
 	Add("Right click a line to access its options", "https://www.youtube.com/watch?v=ljTYQ5ZZj7E")
 	Add("You can remove these songs by right clicking and selecting 'Delete'", "https://www.youtube.com/watch?v=X7yiV6226Xg")
 
-	nettable.commit(t)	
+	nettable.commit(t)
 end
 
 function wmcp.Persist()
@@ -51,7 +51,7 @@ concommand.Add("wmcp_add", function(ply, cmd, args, raw)
 
 	local url = args[1]
 
-	local service = medialib.load("media").guessService(url)
+	local service = wmcp.medialib.load("media").guessService(url)
 	if not service then ply:ChatPrint("Invalid url provided: no service found") return end
 
 	service:query(url, function(err, data)
@@ -84,7 +84,7 @@ concommand.Add("wmcp_play", function(ply, cmd, args, raw)
 	local url = args[1]
 	local title = args[2]
 
-	local service = medialib.load("media").guessService(url)
+	local service = wmcp.medialib.load("media").guessService(url)
 	if not service then ply:ChatPrint("Invalid url provided: no service found") return end
 
 	service:query(url, function(err, data)

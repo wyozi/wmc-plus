@@ -3,7 +3,7 @@ function wmcp.Play(url, overridingMeta)
 		wmcp.Clip:stop()
 	end
 
-	local service = medialib.load("media").guessService(url)
+	local service = wmcp.medialib.load("media").guessService(url)
 	local clip = service:load(url)
 	clip:play()
 	clip:setVolume(wmcp.GetVolume())

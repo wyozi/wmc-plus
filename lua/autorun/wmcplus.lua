@@ -2,18 +2,17 @@ wmcp = {}
 
 function wmcp.include_cl(file)
 	if SERVER then AddCSLuaFile(file) end
-	if CLIENT then include(file) end
+	if CLIENT then return include(file) end
 end
 function wmcp.include_sv(file)
-	if SERVER then include(file) end
+	if SERVER then return include(file) end
 end
 function wmcp.include_sh(file)
-	wmcp.include_cl(file)
-	wmcp.include_sv(file)
+	return wmcp.include_cl(file) or wmcp.include_sv(file)
 end
 
 -- Load libraries
-if not medialib then wmcp.include_sh("wmcp_libs/medialib.lua") end
+wmcp.medialib = wmcp.include_sh("wmcp_libs/medialib.lua")
 if not nettable then wmcp.include_sh("wmcp_libs/nettable.lua") end
 
 -- Load WMCP
