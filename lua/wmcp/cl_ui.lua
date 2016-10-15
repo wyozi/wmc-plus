@@ -9,16 +9,14 @@ function wmcp.OpenUI()
 	fr:SetSize(900, 600)
 	fr:Center()
 
-	-- Close button
+	local closeButton
 	do
 		local btn = fr:Add("DButton")
+		closeButton = btn
+
 		btn:SetText("")
 		btn.BGTint = Color(210, 77, 87)
 		btn.OutlineTint = Color(255, 255, 255, 80)
-		function btn:PerformLayout()
-			btn:SetPos(fr:GetWide() - 29, 3)
-			btn:SetSize(25, 19)
-		end
 		function btn:PaintOver(w, h)
 			surface.SetDrawColor(255, 255, 255, 180)
 			surface.DrawRect(4, h - 7, w - 8, 3)
@@ -26,8 +24,43 @@ function wmcp.OpenUI()
 		btn.DoClick = function() fr:Close() end
 	end
 
+	local configButton
+	do
+		local btn = fr:Add("DButton")
+		configButton = btn
+
+		btn:SetText("")
+		btn.BGTint = Color(110, 135, 135)
+		btn.OutlineTint = Color(255, 255, 255, 80)
+
+		local cog = Material("icon16/cog.png")
+		function btn:PaintOver(w, h)
+			surface.SetDrawColor(255, 255, 255, 180)
+			surface.SetMaterial(cog)
+			surface.DrawTexturedRect(5, 2, 16, 16)
+		end
+		btn.DoClick = function()
+			local menu = DermaMenu()
+
+			local showingVideo = cvars.Bool("wmcp_debugvideo")
+			menu:AddOption(showingVideo and "Disable video" or "Enable video", function()
+				GetConVar("wmcp_debugvideo"):SetInt(showingVideo and 0 or 1)
+			end):SetIcon(showingVideo and "icon16/film_add.png" or "icon16/film_delete.png")
+
+			menu:Open()
+		end
+	end
+
 	wmcp.CreateMediaList(fr)
 	wmcp.CreatePlayer(fr)
+
+	function fr:PerformLayout()
+		closeButton:SetPos(self:GetWide() - 29, 3)
+		closeButton:SetSize(25, 19)
+
+		configButton:SetPos(self:GetWide() - 57, 3)
+		configButton:SetSize(25, 19)
+	end
 
 	fr:MakePopup()
 
