@@ -51,12 +51,22 @@ function PANEL:InitCustomControls(ctrl)
 	local qbtn = ctrl:Add("DButton")
 	qbtn:Dock(RIGHT)
 	qbtn:SetWide(100)
-	qbtn:SetText("Add to Queue")
+	qbtn:SetText("Add")
 	qbtn.DoClick = function()
-		self:OnURLSelected(ctrl.AddressBar:GetText())
+		self:OnURLSelected(ctrl.AddressBar:GetText(), "add")
 	end
 
 	self.addToQueueButton = qbtn
+
+	local qbtn = ctrl:Add("DButton")
+	qbtn:Dock(RIGHT)
+	qbtn:SetWide(100)
+	qbtn:SetText("Play")
+	qbtn.DoClick = function()
+		self:OnURLSelected(ctrl.AddressBar:GetText(), "play")
+	end
+
+	self.playThisButton = qbtn
 end
 
 function PANEL:Init()
@@ -127,12 +137,9 @@ function PANEL:Init()
 	self.browser.OnChangeTitle = function(s, u) self.browser:RequestCurrentURL() end
 end
 
-function PANEL:SetButtonText(t)
-	self.addToQueueButton:SetText(t)
-end
-
 function PANEL:OnURLValidityChanged(b)
 	self.addToQueueButton:SetEnabled(b)
+	self.playThisButton:SetEnabled(b)
 end
 
 function PANEL:OnURLSelected(url)
@@ -145,11 +152,10 @@ function wmcp.OpenVideoSelector(callback)
 	fr:SetSkin("WMCPUI")
 
 	local vidsel = fr:Add("WMCPMedialibVideoSelector")
-	vidsel:SetButtonText("Add Video")
-	vidsel.OnURLSelected = function(_, url)
+	vidsel.OnURLSelected = function(_, url, act)
 		fr:Close()
 
-		callback(url)
+		callback(url, act)
 	end
 	vidsel:Dock(FILL)
 

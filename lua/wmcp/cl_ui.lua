@@ -92,8 +92,12 @@ function wmcp.CreateMediaList(par)
 		adder:SetSkin("WMCPUI")
 		adder:SetText("Add new video by clicking here")
 		adder.DoClick = function()
-			wmcp.OpenVideoSelector(function(url)
-				RunConsoleCommand("wmcp_add", url)
+			wmcp.OpenVideoSelector(function(url, act)
+				if act == "add" then
+					RunConsoleCommand("wmcp_add", url)
+				elseif act == "play" then
+					wmcp.Play(url)
+				end
 			end)
 		end
 		local line = medialist:AddLine("", adder, nil)
