@@ -22,6 +22,7 @@ wmcp.include_cl("wmcp/cl_skin.lua")
 
 wmcp.include_cl("wmcp/cl_vgui_plycell.lua")
 wmcp.include_cl("wmcp/cl_vgui_seeker.lua")
+wmcp.include_cl("wmcp/cl_videoselector.lua")
 wmcp.include_cl("wmcp/cl_ui.lua")
 
 wmcp.include_cl("wmcp/cl_key.lua")

@@ -92,7 +92,7 @@ function wmcp.CreateMediaList(par)
 		adder:SetSkin("WMCPUI")
 		adder:SetText("Add new video by clicking here")
 		adder.DoClick = function()
-			Derma_StringRequest("Video adder", "Please input an URL", "", function(url)
+			wmcp.OpenVideoSelector(function(url)
 				RunConsoleCommand("wmcp_add", url)
 			end)
 		end
