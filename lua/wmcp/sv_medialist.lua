@@ -21,28 +21,23 @@ function wmcp.Persist()
 	file.Write("wmcp.txt", util.TableToJSON(t, true))
 end
 
-local wmcp_allowed = CreateConVar("wmcp_allowedgroup", "admin", FCVAR_ARCHIVE, "The minimum usergroup that is allowed to add/remove/play videos.")
-
-function wmcp.IsAllowed(ply, act)
-	if not IsValid(ply) then return true end
-	if ply:IsSuperAdmin() then return true end -- always allowed
-
-	local g = wmcp_allowed:GetString()
-	-- Check for default usergroups
-	if g == "admin" or g == "admins" then return ply:IsAdmin() end
-
-	-- Check for ULX usergroups
-	if ply.CheckGroup and ply:CheckGroup(g) then return true end
-
-	-- Check for GMod usergroups
-	if ply:IsUserGroup(g) then return true end
-
-	return false
+local function addSecuredConcommand(nm, perm, callback)
+	concommand.Add(nm, function(ply, cmd, args, raw)
+		if not IsValid(ply) then
+			callback(ply, cmd, args, raw)
+		else
+			ply:WMCP_CheckPermissionAsync(perm, function(allowed)
+				if allowed then
+					callback(ply, cmd, args, raw)
+				else
+					ply:ChatPrint("Access to '" .. cmd .. "' denied.")
+				end
+			end)
+		end
+	end)
 end
 
-concommand.Add("wmcp_add", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "add") then ply:ChatPrint("access denied") return end
-
+addSecuredConcommand("wmcp_add", "add", function(ply, cmd, args, raw)
 	local url = args[1]
 
 	local service = wmcp.medialib.load("media").guessService(url)
@@ -57,9 +52,8 @@ concommand.Add("wmcp_add", function(ply, cmd, args, raw)
 		wmcp.Persist()
 	end)
 end)
-concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "edit") then ply:ChatPrint("access denied") return end
 
+addSecuredConcommand("wmcp_settitle", "modify", function(ply, cmd, args, raw)
 	local id = tonumber(args[1])
 	local newTitle = args[2]
 	if id then
@@ -70,11 +64,16 @@ concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
 	nettable.commit(t)
 	wmcp.Persist()
 end)
+addSecuredConcommand("wmcp_del", "modify", function(ply, cmd, args, raw)
+	local id = tonumber(args[1])
+	if id then table.remove(t, id) end
+
+	nettable.commit(t)
+	wmcp.Persist()
+end)
 
 util.AddNetworkString("wmcp_gplay")
-concommand.Add("wmcp_play", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "play") then ply:ChatPrint("access denied") return end
-
+addSecuredConcommand("wmcp_play", "playglobal", function(ply, cmd, args, raw)
 	local url = args[1]
 	local title = args[2]
 
@@ -89,13 +88,4 @@ concommand.Add("wmcp_play", function(ply, cmd, args, raw)
 		net.WriteString(title or "")
 		net.Broadcast()
 	end)
-end)
-concommand.Add("wmcp_del", function(ply, cmd, args, raw)
-	if not wmcp.IsAllowed(ply, "del") then ply:ChatPrint("access denied") return end
-
-	local id = tonumber(args[1])
-	if id then table.remove(t, id) end
-
-	nettable.commit(t)
-	wmcp.Persist()
 end)
