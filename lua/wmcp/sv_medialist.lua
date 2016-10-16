@@ -26,12 +26,8 @@ local function addSecuredConcommand(nm, perm, callback)
 		if not IsValid(ply) then
 			callback(ply, cmd, args, raw)
 		else
-			ply:WMCP_CheckPermissionAsync(perm, function(allowed)
-				if allowed then
-					callback(ply, cmd, args, raw)
-				else
-					ply:ChatPrint("Access to '" .. cmd .. "' denied.")
-				end
+			ply:WMCP_IfPermissionAsync(perm, function()
+				callback(ply, cmd, args, raw)
 			end)
 		end
 	end)
@@ -53,23 +49,32 @@ addSecuredConcommand("wmcp_add", "add", function(ply, cmd, args, raw)
 	end)
 end)
 
-addSecuredConcommand("wmcp_settitle", "modify", function(ply, cmd, args, raw)
+concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
 	local id = tonumber(args[1])
 	local newTitle = args[2]
-	if id then
-		local val = t[id]
-		if val then val.title = newTitle end
+
+	local entry = t[id or -1]
+	if entry then
+		local addedByPly = ply:SteamID() == entry.a_sid
+
+		ply:WMCP_IfPermissionAsync(addedByPly and "modifyowned" or "modify", function()
+			entry.title = newTitle
+			nettable.commit(t)
+			wmcp.Persist()
+		end)
 	end
-
-	nettable.commit(t)
-	wmcp.Persist()
 end)
-addSecuredConcommand("wmcp_del", "modify", function(ply, cmd, args, raw)
+concommand.Add("wmcp_del", "modify", function(ply, cmd, args, raw)
 	local id = tonumber(args[1])
-	if id then table.remove(t, id) end
+	local entry = t[id or -1]
 
-	nettable.commit(t)
-	wmcp.Persist()
+	if entry then
+		ply:WMCP_IfPermissionAsync(addedByPly and "modifyowned" or "modify", function()
+			table.remove(t, id)
+			nettable.commit(t)
+			wmcp.Persist()
+		end)
+	end
 end)
 
 util.AddNetworkString("wmcp_gplay")
