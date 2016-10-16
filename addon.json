@@ -3,7 +3,8 @@
     "ignore": [
         "logo*.jpg",
         ".git/*",
-        ".gitignore"
+        ".gitignore",
+        "LICENSE"
     ],
     "tags": [
         "fun", "movie"
