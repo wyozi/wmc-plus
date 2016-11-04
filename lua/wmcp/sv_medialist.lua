@@ -64,7 +64,7 @@ concommand.Add("wmcp_settitle", function(ply, cmd, args, raw)
 		end)
 	end
 end)
-concommand.Add("wmcp_del", "modify", function(ply, cmd, args, raw)
+concommand.Add("wmcp_del", function(ply, cmd, args, raw)
 	local id = tonumber(args[1])
 	local entry = t[id or -1]
 
