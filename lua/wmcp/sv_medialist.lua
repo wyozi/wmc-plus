@@ -21,19 +21,7 @@ function wmcp.Persist()
 	file.Write("wmcp.txt", util.TableToJSON(t, true))
 end
 
-local function addSecuredConcommand(nm, perm, callback)
-	concommand.Add(nm, function(ply, cmd, args, raw)
-		if not IsValid(ply) then
-			callback(ply, cmd, args, raw)
-		else
-			ply:WMCP_IfPermissionAsync(perm, function()
-				callback(ply, cmd, args, raw)
-			end)
-		end
-	end)
-end
-
-addSecuredConcommand("wmcp_add", "add", function(ply, cmd, args, raw)
+wmcp.AddSecuredConcommand("wmcp_add", "add", function(ply, cmd, args, raw)
 	local url = args[1]
 
 	local service = wmcp.medialib.load("media").guessService(url)
@@ -78,7 +66,7 @@ concommand.Add("wmcp_del", function(ply, cmd, args, raw)
 end)
 
 util.AddNetworkString("wmcp_gplay")
-addSecuredConcommand("wmcp_play", "playglobal", function(ply, cmd, args, raw)
+wmcp.AddSecuredConcommand("wmcp_play", "playglobal", function(ply, cmd, args, raw)
 	local url = args[1]
 	local title = args[2]
 

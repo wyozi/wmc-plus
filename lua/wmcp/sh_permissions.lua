@@ -56,3 +56,19 @@ function Player:WMCP_IfPermissionAsync(perm, callback)
 		end
 	end)
 end
+
+if SERVER then
+	-- Adds a concommand that only calls callback if player has 'perm' permission
+	-- The signature of callback is same as normal concommand.Add callback signature
+	function wmcp.AddSecuredConcommand(nm, perm, callback)
+		concommand.Add(nm, function(ply, cmd, args, raw)
+			if not IsValid(ply) then
+				callback(ply, cmd, args, raw)
+			else
+				ply:WMCP_IfPermissionAsync(perm, function()
+					callback(ply, cmd, args, raw)
+				end)
+			end
+		end)
+	end
+end
