@@ -18,6 +18,7 @@ if not nettable then wmcp.include_sh("wmcp_libs/nettable.lua") end
 -- Load WMCP
 wmcp.include_sv("wmcp/sh_permissions.lua")
 
+wmcp.include_sv("wmcp/sv_media.lua")
 wmcp.include_sv("wmcp/sv_medialist.lua")
 
 wmcp.include_cl("wmcp/cl_skin.lua")

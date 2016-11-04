@@ -65,20 +65,20 @@ concommand.Add("wmcp_del", function(ply, cmd, args, raw)
 	end
 end)
 
-util.AddNetworkString("wmcp_gplay")
-wmcp.AddSecuredConcommand("wmcp_play", "playglobal", function(ply, cmd, args, raw)
+wmcp.AddSecuredConcommand("wmcp_gplay", "playglobal", function(ply, cmd, args, raw)
 	local url = args[1]
 	local title = args[2]
 
-	local service = wmcp.medialib.load("media").guessService(url)
-	if not service then ply:ChatPrint("Invalid url provided: no service found") return end
+	wmcp.PlayFor(nil, url, {
+		meta = {
+			title = title
+		},
+		onError = function(err)
+			ply:ChatPrint(err)
+		end
+	})
+end)
 
-	service:query(url, function(err, data)
-		if err then ply:ChatPrint("Invalid url provided: " .. err) return end
-
-		net.Start("wmcp_gplay")
-		net.WriteString(url)
-		net.WriteString(title or "")
-		net.Broadcast()
-	end)
+wmcp.AddSecuredConcommand("wmcp_gstop", "playglobal", function(ply, cmd, args, raw)
+	wmcp.StopFor(nil)
 end)

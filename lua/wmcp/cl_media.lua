@@ -27,6 +27,10 @@ net.Receive("wmcp_gplay", function()
 	wmcp.Play(url, {title = title})
 end)
 
+net.Receive("wmcp_gstop", function()
+	wmcp.StopClip()
+end)
+
 function wmcp.TogglePlay(url)
 	local clip = wmcp.Clip
 	if not IsValid(clip) then return end
