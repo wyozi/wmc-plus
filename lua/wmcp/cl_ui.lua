@@ -1,3 +1,22 @@
+local config = {
+	{
+		cvar = "wmcp_debugvideo",
+
+		text = function(cvarValue) return cvarValue == "1" and "Disable video" or "Enable video" end,
+		icon = function(cvarValue) return cvarValue == "1" and "icon16/film_add.png" or "icon16/film_delete.png" end,
+
+		onPress = function(prevCvarValue) return prevCvarValue == "1" and "0" or 1 end
+	},
+	{
+		cvar = "wmcp_unfocusedmute",
+
+		text = function(cvarValue) return cvarValue == "1" and "Play sound when unfocused" or "Mute sound when unfocused" end,
+		icon = function(cvarValue) return cvarValue == "1" and "icon16/sound_delete.png" or "icon16/sound_add.png" end,
+
+		onPress = function(prevCvarValue) return prevCvarValue == "1" and "0" or 1 end
+	}
+}
+
 function wmcp.OpenUI()
 	local fr = vgui.Create("DFrame")
 	fr:SetSkin("WMCPUI")
@@ -42,10 +61,15 @@ function wmcp.OpenUI()
 		btn.DoClick = function()
 			local menu = DermaMenu()
 
-			local showingVideo = cvars.Bool("wmcp_debugvideo")
-			menu:AddOption(showingVideo and "Disable video" or "Enable video", function()
-				GetConVar("wmcp_debugvideo"):SetInt(showingVideo and 0 or 1)
-			end):SetIcon(showingVideo and "icon16/film_add.png" or "icon16/film_delete.png")
+			for _,cfg in pairs(config) do
+				local cvar = GetConVar(cfg.cvar)
+				local value = cvar:GetString()
+
+				menu:AddOption(cfg.text(value), function()
+					cvar:SetString(cfg.onPress(value))
+				end):SetIcon(cfg.icon(value))
+
+			end
 
 			menu:Open()
 		end
